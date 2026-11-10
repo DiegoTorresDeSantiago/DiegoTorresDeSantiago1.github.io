@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tabla periódica</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: encabezado con buscador; tabla de 18 columnas con el panel de controles
+   en el hueco libre arriba al centro; la ficha se abre en un cuadro con color de su categoría. */
+:root {
+  --bg: oklch(0.965 0.006 215);
+  --surface: oklch(0.99 0.003 215);
+  --ink: oklch(0.22 0.02 245);
+  --muted: oklch(0.47 0.02 245);
+  --line: oklch(0.86 0.012 225);
+  --on-cat: oklch(0.2 0.02 245);
+  --shadow: 0 14px 34px oklch(0.3 0.03 245 / 0.22);
+
+  --c-alkali: oklch(0.72 0.16 30);
+  --c-alkaline: oklch(0.8 0.14 78);
+  --c-transition: oklch(0.7 0.1 250);
+  --c-post: oklch(0.76 0.04 235);
+  --c-metalloid: oklch(0.8 0.14 118);
+  --c-nonmetal: oklch(0.76 0.14 158);
+  --c-halogen: oklch(0.72 0.15 335);
+  --c-noble: oklch(0.7 0.14 295);
+  --c-lan: oklch(0.78 0.12 5);
+  --c-act: oklch(0.76 0.1 205);
+
+  --s-solid: oklch(0.72 0.03 245);
+  --s-liquid: oklch(0.74 0.14 225);
+  --s-gas: oklch(0.8 0.15 65);
+
+  --f-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --f-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --t: clamp(50px, calc((100vw - 110px) / 19), 74px);
+  --g: 4px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: oklch(0.2 0.015 250);
+    --surface: oklch(0.255 0.018 250);
+    --ink: oklch(0.95 0.008 240);
+    --muted: oklch(0.74 0.02 240);
+    --line: oklch(0.36 0.02 250);
+    --shadow: 0 14px 34px oklch(0.05 0.02 250 / 0.55);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: oklch(0.2 0.015 250);
+  --surface: oklch(0.255 0.018 250);
+  --ink: oklch(0.95 0.008 240);
+  --muted: oklch(0.74 0.02 240);
+  --line: oklch(0.36 0.02 250);
+  --shadow: 0 14px 34px oklch(0.05 0.02 250 / 0.55);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-block: 22px 44px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.page { max-width: 1480px; margin: 0 auto; display: flex; flex-direction: column; gap: 26px; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+sup { font-size: 0.68em; line-height: 0; }
+
+/* Encabezado */
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 32px; }
+.brand { min-width: 0; }
+h1 {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-stretch: 80%;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.creds { margin: 10px 0 2px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+.creds .course { margin: 0; font-weight: 500; }
+.creds ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 0 12px; }
+.creds li span { margin-left: 3px; }
+.lede { margin: 8px 0 0; color: var(--muted); max-width: 46ch; font-size: 14px; }
+.search { position: relative; width: min(420px, 100%); }
+.search input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px 0 40px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 14px 50%;
+}
+.search input::placeholder { color: var(--muted); }
+.results {
+  position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0;
+  margin: 0; padding: 6px; list-style: none;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow);
+}
+.results button {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 6px 8px;
+  background: none; border: 0; border-radius: 10px; cursor: pointer; text-align: left;
+}
+.results button:hover, .results button:focus-visible { background: color-mix(in oklab, var(--ink) 8%, var(--surface)); }
+.results .mini-sym {
+  display: grid; place-items: center; width: 38px; height: 38px; flex: none;
+  border-radius: 8px; background: var(--cat); color: var(--on-cat);
+  font-family: var(--f-display); font-weight: 700; font-size: 17px;
+}
+.results .rn { font-weight: 600; }
+.results .rz { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+.results .none { padding: 10px 12px; color: var(--muted); }
+
+/* Tabla */
+.tablewrap { overflow-x: auto; padding: 8px 6px 14px; margin: -8px -6px -14px; }
+.table {
+  display: grid;
+  grid-template-columns: 24px repeat(18, var(--t));
+  grid-template-rows: 20px repeat(7, var(--tile-h)) 16px var(--tile-h) var(--tile-h);
+  gap: var(--g);
+  width: max-content;
+  --tile-h: calc(var(--t) * 1.12);
+}
+.lab { color: var(--muted); font-size: 12px; display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; }
+.lab.fam { justify-content: flex-end; text-align: right; font-size: 12px; line-height: 1.2; padding-right: 8px; }
+.tile {
+  --cat: var(--c-transition);
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  height: var(--tile-h);
+  padding: 4px 2px 5px;
+  border: 1px solid color-mix(in oklab, var(--cat) 55%, var(--surface));
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--cat) 26%, var(--surface));
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+}
+.tile .z { align-self: flex-start; padding-left: 3px; font-size: calc(var(--t) * 0.16); line-height: 1; font-variant-numeric: tabular-nums; color: color-mix(in oklab, var(--ink) 70%, transparent); }
+.tile .sym { font-family: var(--f-display); font-weight: 700; font-size: calc(var(--t) * 0.42); line-height: 1; letter-spacing: -0.01em; }
+.tile .nm { font-size: calc(var(--t) * 0.145); line-height: 1; white-space: nowrap; max-width: 100%; }
+.tile:hover { background: var(--cat); color: var(--on-cat); border-color: var(--cat); transform: translateY(-2px) scale(1.07); z-index: 3; box-shadow: var(--shadow); }
+.tile:hover .z { color: color-mix(in oklab, var(--on-cat) 70%, transparent); }
+.tile.dim { opacity: 0.18; }
+.tile.dim:hover { opacity: 1; }
+
+.tile[data-c="alkali"] { --cat: var(--c-alkali); }
+.tile[data-c="alkaline"] { --cat: var(--c-alkaline); }
+.tile[data-c="transition"] { --cat: var(--c-transition); }
+.tile[data-c="post"] { --cat: var(--c-post); }
+.tile[data-c="metalloid"] { --cat: var(--c-metalloid); }
+.tile[data-c="nonmetal"] { --cat: var(--c-nonmetal); }
+.tile[data-c="halogen"] { --cat: var(--c-halogen); }
+.tile[data-c="noble"] { --cat: var(--c-noble); }
+.tile[data-c="lan"] { --cat: var(--c-lan); }
+.tile[data-c="act"] { --cat: var(--c-act); }
+.table[data-view="estado"] .tile[data-st="s"] { --cat: var(--s-solid); }
+.table[data-view="estado"] .tile[data-st="l"] { --cat: var(--s-liquid); }
+.table[data-view="estado"] .tile[data-st="g"] { --cat: var(--s-gas); }
+.table[data-view="estado"] .tile[data-st="u"] {
+  --cat: var(--muted);
+  background: repeating-linear-gradient(135deg, var(--surface) 0 5px, color-mix(in oklab, var(--ink) 9%, var(--surface)) 5px 10px);
+  border-style: dashed;
+  border-color: var(--line);
+}
+.table[data-view="estado"] .tile[data-st="u"]:hover { background: color-mix(in oklab, var(--ink) 16%, var(--surface)); color: var(--ink); border-color: var(--muted); }
+
+/* Panel de controles */
+.panel { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; min-width: 0; }
+.seg { display: inline-flex; align-self: flex-start; padding: 3px; gap: 2px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.seg button { height: 32px; padding: 0 14px; border: 0; border-radius: 999px; background: none; cursor: pointer; font-weight: 500; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.legend { display: flex; flex-wrap: wrap; gap: 2px 4px; }
+.chip {
+  --cat: var(--c-transition);
+  display: flex; align-items: center; gap: 7px; min-width: 0; height: 26px; padding: 0 9px; flex: none;
+  background: none; border: 0; border-radius: 999px; cursor: pointer; text-align: left; font-size: 13px;
+}
+.chip:hover { background: color-mix(in oklab, var(--ink) 7%, transparent); }
+.chip[aria-pressed="true"] { background: color-mix(in oklab, var(--cat) 30%, var(--surface)); }
+.chip .dot { width: 11px; height: 11px; flex: none; border-radius: 4px; background: var(--cat); }
+.chip .cn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip .cc { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; }
+.temp { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+.temp-read { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.temp-read output { font-family: var(--f-display); font-weight: 700; font-size: 1.3rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.temp-read span { color: var(--muted); font-variant-numeric: tabular-nums; }
+input[type="range"] { -webkit-appearance: none; appearance: none; width: min(300px, 100%); height: 12px; margin: 6px 0; border-radius: 999px; cursor: pointer;
+  background: linear-gradient(90deg, oklch(0.7 0.13 240), oklch(0.88 0.03 240) 28%, oklch(0.8 0.15 65) 62%, oklch(0.66 0.2 28)); }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; border-radius: 50%; background: var(--surface); border: 3px solid var(--ink); box-shadow: 0 2px 6px oklch(0.2 0.02 245 / 0.35); }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--surface); border: 3px solid var(--ink); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.presets button { height: 26px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); cursor: pointer; font-size: 13px; }
+.presets button:hover { border-color: var(--ink); }
+.panel > .seg { flex: none; }
+.states { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; }
+.states span { display: inline-flex; align-items: center; gap: 7px; }
+.states i { width: 14px; height: 14px; border-radius: 4px; background: var(--cat); }
+.states i.u { background: repeating-linear-gradient(135deg, var(--surface) 0 3px, color-mix(in oklab, var(--ink) 25%, var(--surface)) 3px 6px); border: 1px dashed var(--muted); }
+.states b { font-variant-numeric: tabular-nums; font-weight: 600; }
+.hint { margin: 0; color: var(--muted); font-size: 13px; }
+.slot:empty { display: none; }
+
+.foot { color: var(--muted); font-size: 13px; max-width: 80ch; }
+.foot p { margin: 0 0 6px; }
+
+/* Ficha */
+dialog {
+  --cat: var(--c-transition);
+  padding: 0; border: 0; border-radius: 22px; overflow: hidden;
+  width: min(960px, calc(100vw - 24px));
+  background: var(--surface); color: var(--ink);
+  box-shadow: 0 30px 80px oklch(0.1 0.02 250 / 0.5);
+}
+dialog[open] { animation: pop 0.22s ease-out; }
+dialog::backdrop { background: oklch(0.15 0.02 250 / 0.55); backdrop-filter: blur(3px); }
+@keyframes pop { from { opacity: 0; transform: translateY(14px) scale(0.98); } }
+.ficha { display: grid; grid-template-columns: 330px minmax(0, 1fr); height: min(86vh, 780px); }
+.side {
+  display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 26px 22px 22px;
+  background: var(--cat); color: var(--on-cat); overflow: auto;
+}
+.big { width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 0 12px; }
+.big .bz { font-family: var(--f-display); font-weight: 600; font-size: 1.5rem; line-height: 1; font-variant-numeric: tabular-nums; align-self: start; }
+.big .bm { font-size: 14px; font-variant-numeric: tabular-nums; text-align: right; align-self: start; padding-top: 4px; }
+.big .bs { grid-column: 1 / -1; font-family: var(--f-display); font-weight: 800; font-stretch: 78%; font-size: 7.4rem; line-height: 0.95; letter-spacing: -0.03em; margin-top: 2px; }
+.big .bn { grid-column: 1 / -1; font-family: var(--f-display); font-weight: 600; font-size: 1.7rem; line-height: 1.1; }
+.bohr { width: min(290px, 100%); height: auto; margin-block: auto; }
+.bohr .orb { fill: none; stroke: var(--on-cat); stroke-opacity: 0.28; stroke-width: 1; stroke-dasharray: 2 4; }
+.bohr .el { fill: var(--on-cat); }
+.bohr .nuc { fill: var(--on-cat); }
+.bohr .nuc-t { fill: var(--cat); font-family: var(--f-display); font-weight: 700; font-size: 17px; }
+.ring { transform-origin: 0 0; animation: spin var(--d, 60s) linear infinite; }
+.ring.rev { animation-direction: reverse; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.shells { margin-top: 0; font-size: 14px; text-align: center; font-variant-numeric: tabular-nums; }
+.shells b { font-weight: 700; }
+.main { min-width: 0; overflow: auto; padding: 28px 30px 24px; display: flex; flex-direction: column; gap: 22px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding-right: 44px; }
+.tag { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; }
+.tag.cat { border-color: transparent; background: color-mix(in oklab, var(--cat) 34%, var(--surface)); font-weight: 600; }
+.tag.warn { border-color: color-mix(in oklab, var(--c-alkali) 60%, var(--surface)); background: color-mix(in oklab, var(--c-alkali) 16%, var(--surface)); }
+.main h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: clamp(1.9rem, 4vw, 2.6rem); line-height: 1.05; letter-spacing: -0.015em; }
+.lead { margin: 10px 0 0; font-size: 1.08rem; line-height: 1.55; max-width: 62ch; text-wrap: pretty; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.note { padding: 14px 16px; border-radius: 14px; background: color-mix(in oklab, var(--cat) 16%, var(--surface)); }
+.note h3 { margin: 0 0 4px; }
+.note p { margin: 0; text-wrap: pretty; }
+h3 { margin: 0 0 8px; font-family: var(--f-display); font-weight: 650; font-size: 1.05rem; }
+.data { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); margin: 0; border-top: 1px solid var(--line); }
+.data div { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line); min-width: 0; }
+.data dt { color: var(--muted); font-size: 13px; }
+.data dd { margin: 1px 0 0; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.data dd small { font-weight: 400; color: var(--muted); }
+.hist p { margin: 0 0 6px; }
+.hist b { font-weight: 600; }
+.locate { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.mini { display: grid; grid-template-columns: repeat(18, 10px); grid-auto-rows: 10px; gap: 2px; }
+.mini i { border-radius: 2px; background: color-mix(in oklab, var(--c) 45%, var(--surface)); }
+.mini i.on { background: var(--ink); outline: 2px solid var(--ink); outline-offset: 1px; z-index: 1; }
+.nav { display: flex; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 6px; }
+.nav button { display: flex; flex-direction: column; align-items: flex-start; gap: 0; min-width: 0; height: 52px; padding: 6px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); cursor: pointer; text-align: left; }
+.nav button:hover { border-color: var(--ink); }
+.nav button:last-child { align-items: flex-end; text-align: right; margin-left: auto; }
+.nav small { color: var(--muted); font-size: 12px; line-height: 1.2; }
+.nav span { font-weight: 600; line-height: 1.2; }
+.close { position: absolute; top: 14px; right: 14px; z-index: 5; width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); cursor: pointer; }
+.close:hover { border-color: var(--ink); }
+
+/* Vista en lista: cuadrícula de elementos pensada para el dedo */
+.table[data-layout="lista"] { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); grid-template-rows: none; width: auto; gap: 8px; }
+.table[data-layout="lista"] .lab { display: none; }
+.table[data-layout="lista"] .tile { grid-area: auto !important; height: 80px; padding: 6px 4px 7px; border-radius: 10px; }
+.table[data-layout="lista"] .tile .z { font-size: 11px; padding-left: 4px; }
+.table[data-layout="lista"] .tile .sym { font-size: 26px; }
+.table[data-layout="lista"] .tile .nm { display: block; font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; }
+.tile:active { background: var(--cat); color: var(--on-cat); }
+@media (hover: none) { .tile:hover { transform: none; box-shadow: none; } }
+@keyframes sheet { from { transform: translateY(36px); opacity: 0; } }
+
+@media (max-width: 760px) {
+  body { padding-block: 16px 32px; }
+  h1 { font-size: clamp(2rem, 9.5vw, 2.8rem); }
+  .page { gap: 18px; }
+  .search { width: 100%; }
+  .search input { height: 48px; font-size: 16px; }
+  .seg button { height: 36px; padding: 0 12px; }
+  #pane-cat, #pane-est { width: 100%; min-width: 0; }
+  .legend { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .legend::-webkit-scrollbar { display: none; }
+  .chip { height: 34px; padding: 0 12px; font-size: 14px; border: 1px solid var(--line); }
+  .chip[aria-pressed="true"] { border-color: transparent; }
+  input[type="range"] { width: 100%; }
+  .presets { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+  .presets button { flex: none; height: 32px; }
+  .table[data-layout="tabla"] { --g: 3px; --tile-h: calc(var(--t) * 0.95); }
+  .table[data-layout="tabla"] .tile .nm { display: none; }
+  .table[data-layout="tabla"] .tile .sym { font-size: calc(var(--t) * 0.46); }
+  .table[data-layout="tabla"] .tile .z { font-size: calc(var(--t) * 0.2); }
+
+  dialog { width: 100vw; max-width: 100vw; margin: auto 0 0; max-height: 94dvh; border-radius: 22px 22px 0 0; overflow: auto; }
+  dialog[open] { animation: sheet 0.26s ease-out; }
+  .ficha { display: block; height: auto; }
+  .side { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; padding: 58px 18px 16px; overflow: visible; }
+  .big { width: auto; flex: 1 1 140px; }
+  .big .bs { font-size: 5.2rem; }
+  .bohr { width: 150px; margin: 0; flex: none; }
+  .shells { width: 100%; text-align: left; }
+  .main { overflow: visible; padding: 18px 16px 0; gap: 18px; }
+  .chips { padding-right: 0; }
+  .two { grid-template-columns: minmax(0, 1fr); }
+  .data { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nav { position: sticky; bottom: 0; z-index: 4; margin: 0 -16px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; }
+  .nav button { height: 54px; }
+  .nav button span, .nav button small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nav .nclose { align-items: center; justify-content: center; padding: 0 16px; font-weight: 600; }
+  .nav button:last-child { margin-left: 0; }
+  .close { top: 12px; right: 12px; width: 42px; height: 42px; }
+}
+.nav .nclose { align-items: center; justify-content: center; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) {
+  .ring { animation: none; }
+  dialog[open] { animation: none; }
+  .tile, .tile:hover { transition: none; transform: none; }
+}
+</style>
+
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <div class="brand">
+      <h1>Tabla periódica</h1>
+      <div class="creds">
+        <p class="course">Química 1</p>
+        <ul>
+          <li>Diego Torres de Santiago <span>267756</span></li>
+          <li>Kevin José Macías García <span>268487</span></li>
+          <li>Ulises Linares Ceniceros <span>272143</span></li>
+          <li>Rugerio Valdez Itzel Julieta <span>262139</span></li>
+        </ul>
+      </div>
+      <p class="lede">118 elementos. Toca o haz clic en cualquiera para abrir su ficha completa.</p>
+    </div>
+    <div class="search">
+      <label class="sr" for="q">Buscar un elemento</label>
+      <input id="q" type="search" placeholder="Busca por nombre, símbolo o número" autocomplete="off" enterkeyhint="search">
+      <ul class="results" id="results" hidden></ul>
+    </div>
+  </header>
+
+  <div class="slot" id="slot">
+      <section class="panel" id="panel" aria-label="Controles de la tabla">
+      <div class="seg" role="group" aria-label="Forma de ver los elementos">
+        <button type="button" id="l-lista" aria-pressed="true">Lista</button>
+        <button type="button" id="l-tabla" aria-pressed="false">Tabla</button>
+      </div>
+      <div class="seg" role="group" aria-label="Colorear por">
+        <button type="button" id="v-cat" aria-pressed="true">Categoría</button>
+        <button type="button" id="v-est" aria-pressed="false">Estado</button>
+      </div>
+      <div id="pane-cat">
+        <div class="legend" id="legend"></div>
+      </div>
+      <div id="pane-est" class="temp" hidden>
+        <div class="temp-read"><output id="tc" for="trange">25 °C</output><span id="tk">298 K</span></div>
+        <input id="trange" type="range" min="0" max="1000" step="1" value="223" aria-label="Temperatura">
+        <div class="presets" id="presets"></div>
+        <div class="states" id="states"></div>
+      </div>
+    </section>
+</div>
+
+  <p class="hint" id="hint" hidden>Desliza la tabla hacia los lados para ver todas las columnas.</p>
+  <div class="tablewrap">
+    <div class="table" id="table" data-view="cat" data-layout="tabla" role="group" aria-label="Elementos de la tabla periódica">
+    </div>
+  </div>
+
+</div>
+
+<dialog id="dlg" aria-labelledby="fn">
+  <button type="button" class="close" id="close" aria-label="Cerrar ficha" autofocus>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13"/></svg>
+  </button>
+  <div class="ficha" id="ficha"></div>
+</dialog>
+
+<script>
+const E = [{"z":1,"s":"H","n":"Hidrógeno","c":"nonmetal","m":1.008,"mb":false,"g":1,"p":1,"b":"s","cfg":"1s","sh":[1],"en":2.2,"mp":14.01,"bp":20.28,"dens":8.988e-05,"ie":13.6,"rad":25.0,"ab":1400.0,"ox":[-1,1],"radio":false,"o":"Del griego hydro y genes: «generador de agua».","q":"Henry Cavendish, 1766 (Robert Boyle ya lo había obtenido en 1671)","d":"El elemento más ligero y abundante del universo: forma casi tres cuartas partes de la materia visible. En la Tierra casi siempre está combinado, por ejemplo en el agua.","u":"Fabricación de amoníaco y fertilizantes, refinado de petróleo, combustible de cohetes y pilas de combustible.","k":"Las estrellas como el Sol fusionan hidrógeno para formar helio, y de esa reacción sale su luz."},{"z":2,"s":"He","n":"Helio","c":"noble","m":4.002602,"mb":false,"g":18,"p":1,"b":"s","cfg":"1s2","sh":[2],"en":null,"mp":0,"bp":4.22,"dens":0.0001785,"ie":24.59,"rad":120.0,"ab":0.008,"ox":[],"radio":false,"o":"Del griego helios, «Sol»: se detectó primero en el espectro solar.","q":"Pierre Janssen y Norman Lockyer (en el Sol, 1868); William Ramsay (en la Tierra, 1895)","d":"Gas noble incoloro e inerte, el segundo elemento más abundante del universo. Tiene el punto de ebullición más bajo de todos los elementos.","u":"Enfriar imanes de resonancia magnética, llenar globos, mezclas de buceo profundo y atmósferas protectoras para soldar.","k":"Es el único elemento que se descubrió en el Sol antes que en la Tierra. A presión normal no se solidifica ni siquiera en el cero absoluto."},{"z":3,"s":"Li","n":"Litio","c":"alkali","m":6.94,"mb":false,"g":1,"p":2,"b":"s","cfg":"[He] 2s","sh":[2,1],"en":0.98,"mp":453.69,"bp":1560.0,"dens":0.534,"ie":5.39,"rad":145.0,"ab":20.0,"ox":[1],"radio":false,"o":"Del griego lithos, «piedra»: se encontró primero en un mineral.","q":"Johan August Arfwedson, 1817","d":"El metal más ligero. Es tan blando que se corta con un cuchillo y reacciona con el agua y el aire.","u":"Baterías recargables de celulares y autos eléctricos, vidrio, cerámica y medicamentos para el trastorno bipolar.","k":"Su llama es de un rojo carmesí intenso, el color que se usa en los fuegos artificiales rojos."},{"z":4,"s":"Be","n":"Berilio","c":"alkaline","m":9.0121831,"mb":false,"g":2,"p":2,"b":"s","cfg":"[He] 2s2","sh":[2,2],"en":1.57,"mp":1560.0,"bp":2742.0,"dens":1.85,"ie":9.32,"rad":105.0,"ab":2.8,"ox":[2],"radio":false,"o":"Del griego beryllos: el mineral berilo, de donde se extrajo.","q":"Louis-Nicolas Vauquelin, 1798 (aislado por Friedrich Wöhler y Antoine Bussy, 1828)","d":"Metal gris, ligero y muy rígido, casi transparente a los rayos X. Su polvo y sus compuestos son tóxicos.","u":"Ventanas de tubos de rayos X, aleaciones con cobre, componentes aeroespaciales y los espejos del telescopio James Webb.","k":"Las esmeraldas y los aguamarinas son berilo: sin berilio no existirían."},{"z":5,"s":"B","n":"Boro","c":"metalloid","m":10.81,"mb":false,"g":13,"p":2,"b":"p","cfg":"[He] 2s2 2p","sh":[2,3],"en":2.04,"mp":2349.0,"bp":4200.0,"dens":2.34,"ie":8.3,"rad":85.0,"ab":10.0,"ox":[3],"radio":false,"o":"Del árabe buraq y el persa burah, nombres del bórax.","q":"Joseph Louis Gay-Lussac, Louis Jacques Thénard y Humphry Davy, 1808","d":"Metaloide duro y oscuro que casi nunca se encuentra puro. Sus compuestos resisten muy bien el calor.","u":"Vidrio borosilicatado (tipo Pyrex), detergentes, fibra de vidrio, fertilizantes y barras de control de reactores nucleares.","k":"Las plantas lo necesitan en cantidades diminutas para construir sus paredes celulares."},{"z":6,"s":"C","n":"Carbono","c":"nonmetal","m":12.011,"mb":false,"g":14,"p":2,"b":"p","cfg":"[He] 2s2 2p2","sh":[2,4],"en":2.55,"mp":3915,"bp":3915,"dens":2.267,"ie":11.26,"rad":70.0,"ab":200.0,"ox":[-4,4],"radio":false,"o":"Del latín carbo, «carbón».","q":"Conocido desde la antigüedad","d":"Base de toda la vida conocida. Forma diamante, grafito, grafeno, fullerenos y nanotubos: el mismo elemento con propiedades muy distintas.","u":"Combustibles, acero, plásticos, lápices, filtros de agua, fibra de carbono y todos los compuestos orgánicos.","k":"El diamante y el grafito son carbono puro; solo cambia cómo se ordenan los átomos.","sub":"Sublima a ≈ 3,642 °C (3,915 K)"},{"z":7,"s":"N","n":"Nitrógeno","c":"nonmetal","m":14.007,"mb":false,"g":15,"p":2,"b":"p","cfg":"[He] 2s2 2p3","sh":[2,5],"en":3.04,"mp":63.15,"bp":77.36,"dens":0.0012506,"ie":14.53,"rad":65.0,"ab":19.0,"ox":[-3,3,5],"radio":false,"o":"Del griego nitron y genes: «generador de nitro».","q":"Daniel Rutherford, 1772","d":"Gas incoloro y poco reactivo que forma el 78 % del aire. Es parte esencial de las proteínas y del ADN.","u":"Fertilizantes (a partir del amoníaco), explosivos, conservación de alimentos y congelación con nitrógeno líquido.","k":"Su triple enlace es tan fuerte que las plantas no pueden usar el nitrógeno del aire; dependen de bacterias que lo «fijan»."},{"z":8,"s":"O","n":"Oxígeno","c":"nonmetal","m":15.999,"mb":false,"g":16,"p":2,"b":"p","cfg":"[He] 2s2 2p4","sh":[2,6],"en":3.44,"mp":54.36,"bp":90.2,"dens":0.001429,"ie":13.62,"rad":60.0,"ab":461000.0,"ox":[-2],"radio":false,"o":"Del griego oxys y genes: «generador de ácidos».","q":"Carl Wilhelm Scheele (hacia 1771) y Joseph Priestley (1774)","d":"Gas que forma el 21 % del aire y casi la mitad de la masa de la corteza terrestre. Hace falta para respirar y para que haya combustión.","u":"Respiración, producción de acero, soldadura, tratamiento de aguas, medicina y oxidante de cohetes.","k":"El oxígeno líquido es azul pálido y los imanes lo atraen."},{"z":9,"s":"F","n":"Flúor","c":"halogen","m":18.998403163,"mb":false,"g":17,"p":2,"b":"p","cfg":"[He] 2s2 2p5","sh":[2,7],"en":3.98,"mp":53.53,"bp":85.03,"dens":0.001696,"ie":17.42,"rad":50.0,"ab":585.0,"ox":[-1],"radio":false,"o":"Del latín fluere, «fluir»: el mineral fluorita se usaba para que los metales fundieran mejor.","q":"Henri Moissan, 1886","d":"El elemento más electronegativo y reactivo; ataca casi cualquier sustancia. Es un gas amarillo pálido.","u":"Pasta de dientes, teflón, refrigerantes, enriquecimiento de uranio (UF₆) y muchos medicamentos.","k":"Aislarlo costó décadas y la salud de varios químicos. Moissan ganó el Nobel de 1906 por lograrlo."},{"z":10,"s":"Ne","n":"Neón","c":"noble","m":20.1797,"mb":false,"g":18,"p":2,"b":"p","cfg":"[He] 2s2 2p6","sh":[2,8],"en":null,"mp":24.56,"bp":27.07,"dens":0.0009002,"ie":21.56,"rad":160.0,"ab":0.005,"ox":[],"radio":false,"o":"Del griego neos, «nuevo».","q":"William Ramsay y Morris Travers, 1898","d":"Gas noble incoloro e inerte. Brilla con luz rojo anaranjada cuando pasa corriente eléctrica por él.","u":"Letreros luminosos, láseres, refrigerante criogénico e indicadores de alto voltaje.","k":"Los letreros «de neón» de otros colores usan otros gases o recubrimientos; solo el rojo anaranjado es neón puro."},{"z":11,"s":"Na","n":"Sodio","c":"alkali","m":22.98976928,"mb":false,"g":1,"p":3,"b":"s","cfg":"[Ne] 3s","sh":[2,8,1],"en":0.93,"mp":370.87,"bp":1156.0,"dens":0.968,"ie":5.14,"rad":180.0,"ab":23600.0,"ox":[1],"radio":false,"o":"Del inglés soda; su símbolo Na viene del latín natrium.","q":"Humphry Davy, 1807","d":"Metal blando y plateado que reacciona con violencia con el agua. En la naturaleza aparece en compuestos como la sal.","u":"Sal de mesa, jabón, vidrio, lámparas de alumbrado público y refrigerante de algunos reactores.","k":"Es el sexto elemento más abundante de la corteza terrestre. Davy lo obtuvo por electrólisis de sosa cáustica fundida."},{"z":12,"s":"Mg","n":"Magnesio","c":"alkaline","m":24.305,"mb":false,"g":2,"p":3,"b":"s","cfg":"[Ne] 3s2","sh":[2,8,2],"en":1.31,"mp":923.0,"bp":1363.0,"dens":1.738,"ie":7.65,"rad":150.0,"ab":23300.0,"ox":[2],"radio":false,"o":"De Magnesia, región de Grecia donde se halló un mineral con este metal.","q":"Joseph Black (lo reconoció como elemento, 1755); Humphry Davy (lo aisló, 1808)","d":"Metal ligero que arde con una luz blanca muy brillante. Está en el centro de la clorofila.","u":"Aleaciones ligeras para autos y laptops, fuegos artificiales, antiácidos y fertilizantes.","k":"Cada molécula de clorofila tiene un átomo de magnesio en el centro; sin él no hay fotosíntesis."},{"z":13,"s":"Al","n":"Aluminio","c":"post","m":26.9815385,"mb":false,"g":13,"p":3,"b":"p","cfg":"[Ne] 3s2 3p","sh":[2,8,3],"en":1.61,"mp":933.47,"bp":2792.0,"dens":2.7,"ie":5.99,"rad":125.0,"ab":82300.0,"ox":[3],"radio":false,"o":"Del latín alumen, «alumbre».","q":"Hans Christian Ørsted, 1825 (aislado); la alúmina se identificó en 1746","d":"Metal ligero, plateado y resistente a la corrosión gracias a una capa fina de óxido. Es el metal más abundante de la corteza.","u":"Latas, aviones, cables eléctricos, papel aluminio y marcos de ventanas.","k":"En el siglo XIX valía más que el oro; Napoleón III servía a sus invitados más ilustres con cubiertos de aluminio."},{"z":14,"s":"Si","n":"Silicio","c":"metalloid","m":28.085,"mb":false,"g":14,"p":3,"b":"p","cfg":"[Ne] 3s2 3p2","sh":[2,8,4],"en":1.9,"mp":1687.0,"bp":3538.0,"dens":2.329,"ie":8.15,"rad":110.0,"ab":282000.0,"ox":[-4,4],"radio":false,"o":"Del latín silex, «pedernal».","q":"Jöns Jacob Berzelius, 1824","d":"Metaloide gris azulado; es el segundo elemento más abundante de la corteza, después del oxígeno. Es un semiconductor.","u":"Chips, paneles solares, vidrio, cemento, siliconas y cerámicas.","k":"La arena de la playa es sobre todo dióxido de silicio, la materia prima de los chips."},{"z":15,"s":"P","n":"Fósforo","c":"nonmetal","m":30.973761998,"mb":false,"g":15,"p":3,"b":"p","cfg":"[Ne] 3s2 3p3","sh":[2,8,5],"en":2.19,"mp":317.3,"bp":550.0,"dens":1.823,"ie":10.49,"rad":100.0,"ab":1050.0,"ox":[-3,3,5],"radio":false,"o":"Del griego phosphoros, «portador de luz».","q":"Hennig Brand, 1669","d":"No metal que existe en varias formas; el fósforo blanco brilla en la oscuridad. Es esencial para el ADN y el ATP.","u":"Fertilizantes, detergentes, cerillos, acero y aditivos alimentarios.","k":"Brand lo obtuvo de orina evaporada mientras buscaba la piedra filosofal."},{"z":16,"s":"S","n":"Azufre","c":"nonmetal","m":32.06,"mb":false,"g":16,"p":3,"b":"p","cfg":"[Ne] 3s2 3p4","sh":[2,8,6],"en":2.58,"mp":388.36,"bp":717.87,"dens":2.07,"ie":10.36,"rad":100.0,"ab":350.0,"ox":[-2,2,4,6],"radio":false,"o":"Del latín sulphur o sulfur.","q":"Conocido desde la antigüedad","d":"No metal amarillo y quebradizo, presente en volcanes y manantiales termales. Forma parte de varias proteínas.","u":"Ácido sulfúrico (la sustancia química industrial más producida), vulcanizado del caucho, pólvora y fungicidas.","k":"El olor a huevo podrido no es del azufre puro, sino del sulfuro de hidrógeno, un compuesto suyo."},{"z":17,"s":"Cl","n":"Cloro","c":"halogen","m":35.45,"mb":false,"g":17,"p":3,"b":"p","cfg":"[Ne] 3s2 3p5","sh":[2,8,7],"en":3.16,"mp":171.6,"bp":239.11,"dens":0.0032,"ie":12.97,"rad":100.0,"ab":145.0,"ox":[-1,1,3,5,7],"radio":false,"o":"Del griego chloros, «verde amarillento».","q":"Carl Wilhelm Scheele, 1774","d":"Gas tóxico de color verde amarillento y olor penetrante. Muy reactivo; forma cloruros.","u":"Desinfección del agua, PVC, blanqueadores, disolventes y medicamentos.","k":"Se usó como arma química en la Primera Guerra Mundial, pero hoy potabiliza el agua de millones de personas."},{"z":18,"s":"Ar","n":"Argón","c":"noble","m":39.948,"mb":false,"g":18,"p":3,"b":"p","cfg":"[Ne] 3s2 3p6","sh":[2,8,8],"en":null,"mp":83.8,"bp":87.3,"dens":0.001784,"ie":15.76,"rad":71.0,"ab":3.5,"ox":[],"radio":false,"o":"Del griego argos, «inactivo» (perezoso).","q":"Lord Rayleigh y William Ramsay, 1894","d":"Gas noble incoloro e inerte; el tercer gas más abundante del aire (0.93 %).","u":"Atmósfera protectora para soldar, bombillas incandescentes, ventanas de doble vidrio y conservación de documentos antiguos.","k":"Hay más argón en el aire que dióxido de carbono."},{"z":19,"s":"K","n":"Potasio","c":"alkali","m":39.0983,"mb":false,"g":1,"p":4,"b":"s","cfg":"[Ar] 4s","sh":[2,8,8,1],"en":0.82,"mp":336.53,"bp":1032.0,"dens":0.89,"ie":4.34,"rad":220.0,"ab":20900.0,"ox":[1],"radio":false,"o":"Del inglés potash («ceniza de olla»); su símbolo K viene del latín kalium.","q":"Humphry Davy, 1807","d":"Metal blando y plateado que reacciona violentamente con el agua. Es esencial para los nervios y los músculos.","u":"Fertilizantes, jabón, vidrio y suplementos; es un ion clave en el funcionamiento de las células.","k":"Una pequeña parte del potasio es radiactiva (K‑40), y está presente en cualquier cuerpo humano, plátanos incluidos."},{"z":20,"s":"Ca","n":"Calcio","c":"alkaline","m":40.078,"mb":false,"g":2,"p":4,"b":"s","cfg":"[Ar] 4s2","sh":[2,8,8,2],"en":1.0,"mp":1115.0,"bp":1757.0,"dens":1.55,"ie":6.11,"rad":180.0,"ab":41500.0,"ox":[2],"radio":false,"o":"Del latín calx, «cal».","q":"Humphry Davy, 1808","d":"Metal gris plateado, abundante en la corteza. Es el componente principal de huesos y dientes.","u":"Cemento, cal, yeso, suplementos alimentarios y producción de acero.","k":"Los huesos de un adulto contienen cerca de un kilogramo de calcio."},{"z":21,"s":"Sc","n":"Escandio","c":"transition","m":44.955908,"mb":false,"g":3,"p":4,"b":"d","cfg":"[Ar] 3d 4s2","sh":[2,8,9,2],"en":1.36,"mp":1814.0,"bp":3109.0,"dens":2.985,"ie":6.56,"rad":160.0,"ab":22.0,"ox":[3],"radio":false,"o":"De Escandinavia.","q":"Lars Fredrik Nilson, 1879","d":"Metal blando y plateado, bastante raro, que suele agruparse con las tierras raras.","u":"Aleaciones ligeras con aluminio para bicicletas y aviones, lámparas de estadios y pilas de combustible.","k":"Mendeléyev había predicho su existencia y sus propiedades con el nombre de «ekaboro»."},{"z":22,"s":"Ti","n":"Titanio","c":"transition","m":47.867,"mb":false,"g":4,"p":4,"b":"d","cfg":"[Ar] 3d2 4s2","sh":[2,8,10,2],"en":1.54,"mp":1941.0,"bp":3560.0,"dens":4.506,"ie":6.83,"rad":140.0,"ab":5650.0,"ox":[2,3,4],"radio":false,"o":"De los Titanes, de la mitología griega.","q":"William Gregor, 1791 (nombrado por Martin Heinrich Klaproth, 1795)","d":"Metal ligero, muy resistente y que no se corroe. Es biocompatible.","u":"Aviones, prótesis e implantes, joyería y pigmento blanco (dióxido de titanio) en pinturas y bloqueadores solares.","k":"El dióxido de titanio es el blanco de casi todas las pinturas y de muchos dulces y pastas de dientes."},{"z":23,"s":"V","n":"Vanadio","c":"transition","m":50.9415,"mb":false,"g":5,"p":4,"b":"d","cfg":"[Ar] 3d3 4s2","sh":[2,8,11,2],"en":1.63,"mp":2183.0,"bp":3680.0,"dens":6.11,"ie":6.75,"rad":135.0,"ab":120.0,"ox":[2,3,4,5],"radio":false,"o":"De Vanadis, otro nombre de la diosa escandinava Freyja.","q":"Andrés Manuel del Río, 1801 (redescubierto por Nils Gabriel Sefström, 1830)","d":"Metal duro, gris plateado, que forma compuestos de muchos colores.","u":"Aceros para herramientas y resortes, aleaciones de titanio para aviones y baterías de flujo.","k":"Del Río lo descubrió en la Ciudad de México y lo llamó «eritronio», pero se retractó. Sefström lo redescubrió 29 años después."},{"z":24,"s":"Cr","n":"Cromo","c":"transition","m":51.9961,"mb":false,"g":6,"p":4,"b":"d","cfg":"[Ar] 3d5 4s","sh":[2,8,13,1],"en":1.66,"mp":2180.0,"bp":2944.0,"dens":7.15,"ie":6.77,"rad":140.0,"ab":102.0,"ox":[2,3,6],"radio":false,"o":"Del griego chroma, «color».","q":"Louis Nicolas Vauquelin, 1797","d":"Metal duro, brillante y resistente a la corrosión. Sus compuestos son muy coloridos.","u":"Acero inoxidable, cromado, curtido de cuero y pigmentos.","k":"El rojo del rubí y el verde de la esmeralda se deben a pequeñas cantidades de cromo."},{"z":25,"s":"Mn","n":"Manganeso","c":"transition","m":54.938044,"mb":false,"g":7,"p":4,"b":"d","cfg":"[Ar] 3d5 4s2","sh":[2,8,13,2],"en":1.55,"mp":1519.0,"bp":2334.0,"dens":7.21,"ie":7.43,"rad":140.0,"ab":950.0,"ox":[2,4,7],"radio":false,"o":"Del latín magnes, «imán»: se confundió con una piedra magnética.","q":"Johan Gottlieb Gahn, 1774","d":"Metal duro y quebradizo, plateado grisáceo. Imprescindible para fabricar acero.","u":"Aleaciones de acero, pilas alcalinas, vidrio y fertilizantes.","k":"Grandes extensiones del fondo marino están cubiertas de nódulos ricos en manganeso."},{"z":26,"s":"Fe","n":"Hierro","c":"transition","m":55.845,"mb":false,"g":8,"p":4,"b":"d","cfg":"[Ar] 3d6 4s2","sh":[2,8,14,2],"en":1.83,"mp":1811.0,"bp":3134.0,"dens":7.874,"ie":7.9,"rad":140.0,"ab":56300.0,"ox":[2,3],"radio":false,"o":"Del latín ferrum, de donde viene su símbolo Fe.","q":"Conocido desde la antigüedad","d":"Metal gris plateado, maleable y magnético. Es el cuarto elemento más abundante de la corteza y el principal del núcleo de la Tierra.","u":"Acero, construcción, automóviles, herramientas y la hemoglobina que transporta oxígeno en la sangre.","k":"El núcleo de la Tierra es sobre todo hierro y níquel, y genera el campo magnético del planeta."},{"z":27,"s":"Co","n":"Cobalto","c":"transition","m":58.933194,"mb":false,"g":9,"p":4,"b":"d","cfg":"[Ar] 3d7 4s2","sh":[2,8,15,2],"en":1.88,"mp":1768.0,"bp":3200.0,"dens":8.9,"ie":7.88,"rad":135.0,"ab":25.0,"ox":[2,3],"radio":false,"o":"Del alemán Kobold, «duende»: los mineros creían que estos minerales eran obra de duendes.","q":"Georg Brandt, hacia 1735","d":"Metal duro, azulado y magnético. Forma parte de la vitamina B12.","u":"Baterías de iones de litio, superaleaciones para turbinas, imanes y pigmento azul para vidrio y cerámica.","k":"El azul cobalto se usa en cerámicas desde la antigua Persia y Egipto."},{"z":28,"s":"Ni","n":"Níquel","c":"transition","m":58.6934,"mb":false,"g":10,"p":4,"b":"d","cfg":"[Ar] 3d8 4s2","sh":[2,8,16,2],"en":1.91,"mp":1728.0,"bp":3186.0,"dens":8.908,"ie":7.64,"rad":135.0,"ab":84.0,"ox":[2,3],"radio":false,"o":"Del alemán Kupfernickel, «cobre del diablo» (Nickel).","q":"Axel Fredrik Cronstedt, 1751","d":"Metal plateado, duro, magnético y resistente a la corrosión.","u":"Acero inoxidable, monedas, baterías recargables, aleaciones resistentes al calor y catalizadores.","k":"Los mineros de Sajonia no lograban sacar cobre de un mineral rojizo y culparon a un duende llamado Nickel."},{"z":29,"s":"Cu","n":"Cobre","c":"transition","m":63.546,"mb":false,"g":11,"p":4,"b":"d","cfg":"[Ar] 3d10 4s","sh":[2,8,18,1],"en":1.9,"mp":1358.0,"bp":2835.0,"dens":8.96,"ie":7.73,"rad":135.0,"ab":60.0,"ox":[1,2],"radio":false,"o":"Del latín cuprum, «de Chipre», isla de donde se extraía.","q":"Conocido desde la antigüedad","d":"Metal rojizo, blando y excelente conductor del calor y de la electricidad.","u":"Cables eléctricos, tuberías, monedas y aleaciones como el bronce y el latón.","k":"Es uno de los primeros metales que usó la humanidad, hace unos 10,000 años."},{"z":30,"s":"Zn","n":"Zinc","c":"transition","m":65.38,"mb":false,"g":12,"p":4,"b":"d","cfg":"[Ar] 3d10 4s2","sh":[2,8,18,2],"en":1.65,"mp":692.88,"bp":1180.0,"dens":7.14,"ie":9.39,"rad":135.0,"ab":70.0,"ox":[2],"radio":false,"o":"Del alemán Zink, de origen incierto.","q":"Conocido desde la antigüedad (reconocido como metal por Andreas Marggraf, 1746)","d":"Metal azulado y quebradizo a temperatura ambiente, resistente a la corrosión.","u":"Galvanizado del acero, latón, pilas, bloqueadores solares y suplementos.","k":"Es necesario para más de 300 enzimas del cuerpo humano."},{"z":31,"s":"Ga","n":"Galio","c":"post","m":69.723,"mb":false,"g":13,"p":4,"b":"p","cfg":"[Ar] 3d10 4s2 4p","sh":[2,8,18,3],"en":1.81,"mp":302.91,"bp":2673.0,"dens":5.91,"ie":6.0,"rad":130.0,"ab":19.0,"ox":[3],"radio":false,"o":"De Gallia, nombre latino de Francia.","q":"Paul-Émile Lecoq de Boisbaudran, 1875","d":"Metal plateado que se funde con el calor de la mano (29.8 °C).","u":"LED, semiconductores, paneles solares y termómetros sin mercurio.","k":"Se derrite en la mano. Mendeléyev lo había predicho como «eka-aluminio»."},{"z":32,"s":"Ge","n":"Germanio","c":"metalloid","m":72.63,"mb":false,"g":14,"p":4,"b":"p","cfg":"[Ar] 3d10 4s2 4p2","sh":[2,8,18,4],"en":2.01,"mp":1211.0,"bp":3106.0,"dens":5.323,"ie":7.9,"rad":125.0,"ab":1.5,"ox":[-4,2,4],"radio":false,"o":"De Germania, nombre latino de Alemania.","q":"Clemens Winkler, 1886","d":"Metaloide gris plateado y semiconductor. Mendeléyev lo predijo como «eka-silicio».","u":"Fibra óptica, lentes infrarrojas, paneles solares y transistores.","k":"Los primeros transistores eran de germanio, antes de que el silicio los reemplazara."},{"z":33,"s":"As","n":"Arsénico","c":"metalloid","m":74.921595,"mb":false,"g":15,"p":4,"b":"p","cfg":"[Ar] 3d10 4s2 4p3","sh":[2,8,18,5],"en":2.18,"mp":888,"bp":888,"dens":5.727,"ie":9.79,"rad":115.0,"ab":1.8,"ox":[-3,3,5],"radio":false,"o":"Del griego arsenikon, «pigmento amarillo» (del persa zarnik).","q":"Conocido desde la antigüedad (aislado por Alberto Magno, hacia 1250)","d":"Metaloide gris, famoso por la toxicidad de sus compuestos.","u":"Semiconductores (arseniuro de galio), aleaciones de plomo y, antiguamente, pesticidas.","k":"Fue el «veneno de los reyes» durante siglos, pero en dosis mínimas también se usó como medicina.","sub":"Sublima a ≈ 615 °C (888 K)"},{"z":34,"s":"Se","n":"Selenio","c":"nonmetal","m":78.971,"mb":false,"g":16,"p":4,"b":"p","cfg":"[Ar] 3d10 4s2 4p4","sh":[2,8,18,6],"en":2.55,"mp":494,"bp":958.0,"dens":4.81,"ie":9.75,"rad":115.0,"ab":0.05,"ox":[-2,2,4,6],"radio":false,"o":"Del griego selene, «Luna».","q":"Jöns Jacob Berzelius, 1817","d":"No metal, esencial en pequeñas cantidades y tóxico en exceso. Conduce mejor la electricidad con luz.","u":"Celdas fotoeléctricas, vidrio, pigmentos rojos, champús anticaspa y suplementos.","k":"Las nueces de Brasil son una fuente muy rica de selenio."},{"z":35,"s":"Br","n":"Bromo","c":"halogen","m":79.904,"mb":false,"g":17,"p":4,"b":"p","cfg":"[Ar] 3d10 4s2 4p5","sh":[2,8,18,7],"en":2.96,"mp":265.8,"bp":332.0,"dens":3.1028,"ie":11.81,"rad":115.0,"ab":2.4,"ox":[-1,1,3,5],"radio":false,"o":"Del griego bromos, «hedor».","q":"Antoine Jérôme Balard y Carl Löwig, 1825–1826","d":"Uno de los dos elementos que son líquidos a temperatura ambiente (el otro es el mercurio). Es rojizo y de olor fuerte.","u":"Retardantes de llama, medicamentos, tratamiento de agua y fotografía.","k":"El púrpura de Tiro, el tinte de los emperadores antiguos, contiene bromo."},{"z":36,"s":"Kr","n":"Kriptón","c":"noble","m":83.798,"mb":false,"g":18,"p":4,"b":"p","cfg":"[Ar] 3d10 4s2 4p6","sh":[2,8,18,8],"en":3.0,"mp":115.79,"bp":119.93,"dens":0.003749,"ie":14.0,"rad":null,"ab":0.0001,"ox":[2],"radio":false,"o":"Del griego kryptos, «oculto».","q":"William Ramsay y Morris Travers, 1898","d":"Gas noble incoloro e inerte.","u":"Lámparas de alto rendimiento, láseres y flashes fotográficos.","k":"Entre 1960 y 1983 el metro se definió con la luz de una línea espectral del kriptón‑86."},{"z":37,"s":"Rb","n":"Rubidio","c":"alkali","m":85.4678,"mb":false,"g":1,"p":5,"b":"s","cfg":"[Kr] 5s","sh":[2,8,18,8,1],"en":0.82,"mp":312.46,"bp":961.0,"dens":1.532,"ie":4.18,"rad":235.0,"ab":90.0,"ox":[1],"radio":false,"o":"Del latín rubidus, «rojo oscuro», por las líneas rojas de su espectro.","q":"Robert Bunsen y Gustav Kirchhoff, 1861","d":"Metal blando y plateado que reacciona violentamente con el agua.","u":"Relojes atómicos, investigación con átomos ultrafríos y fuegos artificiales violeta.","k":"En 1995 se enfriaron átomos de rubidio cerca del cero absoluto y se logró el primer condensado de Bose-Einstein."},{"z":38,"s":"Sr","n":"Estroncio","c":"alkaline","m":87.62,"mb":false,"g":2,"p":5,"b":"s","cfg":"[Kr] 5s2","sh":[2,8,18,8,2],"en":0.95,"mp":1050.0,"bp":1655.0,"dens":2.64,"ie":5.69,"rad":200.0,"ab":370.0,"ox":[2],"radio":false,"o":"De Strontian, un pueblo de Escocia.","q":"Adair Crawford, 1790 (aislado por Humphry Davy, 1808)","d":"Metal blando y amarillento. Da una llama rojo brillante.","u":"Fuegos artificiales rojos, imanes de cerámica y relojes ópticos.","k":"Su isótopo Sr‑90 es un producto peligroso de la fisión nuclear."},{"z":39,"s":"Y","n":"Itrio","c":"transition","m":88.90584,"mb":false,"g":3,"p":5,"b":"d","cfg":"[Kr] 4d 5s2","sh":[2,8,18,9,2],"en":1.22,"mp":1799.0,"bp":3609.0,"dens":4.472,"ie":6.22,"rad":180.0,"ab":33.0,"ox":[3],"radio":false,"o":"De Ytterby, un pueblo de Suecia.","q":"Johan Gadolin, 1794","d":"Metal plateado que se encuentra junto a las tierras raras.","u":"Fósforos de pantallas y LED blancos, láseres YAG y superconductores.","k":"Ytterby dio nombre a cuatro elementos: itrio, iterbio, terbio y erbio."},{"z":40,"s":"Zr","n":"Circonio","c":"transition","m":91.224,"mb":false,"g":4,"p":5,"b":"d","cfg":"[Kr] 4d2 5s2","sh":[2,8,18,10,2],"en":1.33,"mp":2128.0,"bp":4682.0,"dens":6.52,"ie":6.63,"rad":155.0,"ab":165.0,"ox":[4],"radio":false,"o":"Del persa zargun, «color de oro».","q":"Martin Heinrich Klaproth, 1789","d":"Metal gris, muy resistente a la corrosión y casi transparente a los neutrones.","u":"Revestimiento del combustible de reactores nucleares, cerámicas y joyería (circonia cúbica).","k":"La circonia cúbica, el «diamante falso», es óxido de circonio."},{"z":41,"s":"Nb","n":"Niobio","c":"transition","m":92.90637,"mb":false,"g":5,"p":5,"b":"d","cfg":"[Kr] 4d4 5s","sh":[2,8,18,12,1],"en":1.6,"mp":2750.0,"bp":5017.0,"dens":8.57,"ie":6.76,"rad":145.0,"ab":20.0,"ox":[5],"radio":false,"o":"De Níobe, hija de Tántalo en la mitología griega.","q":"Charles Hatchett, 1801","d":"Metal gris y dúctil, superconductor a bajas temperaturas.","u":"Aceros de alta resistencia, imanes superconductores (resonancia magnética, Gran Colisionador de Hadrones) y joyería.","k":"Brasil produce cerca del 90 % del niobio del mundo."},{"z":42,"s":"Mo","n":"Molibdeno","c":"transition","m":95.95,"mb":false,"g":6,"p":5,"b":"d","cfg":"[Kr] 4d5 5s","sh":[2,8,18,13,1],"en":2.16,"mp":2896.0,"bp":4912.0,"dens":10.28,"ie":7.09,"rad":145.0,"ab":1.2,"ox":[4,6],"radio":false,"o":"Del griego molybdos, «plomo».","q":"Carl Wilhelm Scheele, 1778 (aislado por Peter Jacob Hjelm, 1781)","d":"Metal plateado, muy resistente al calor.","u":"Aceros y aleaciones, lubricantes (MoS₂), catalizadores y enzimas esenciales para la vida.","k":"Durante siglos se confundió con el plomo y el grafito."},{"z":43,"s":"Tc","n":"Tecnecio","c":"transition","m":97.0,"mb":true,"g":7,"p":5,"b":"d","cfg":"[Kr] 4d5 5s2","sh":[2,8,18,13,2],"en":1.9,"mp":2430.0,"bp":4538.0,"dens":11.0,"ie":7.12,"rad":135.0,"ab":3e-09,"ox":[4,7],"radio":true,"o":"Del griego technetos, «artificial».","q":"Carlo Perrier y Emilio Segrè, 1937","d":"Primer elemento producido artificialmente. Es radiactivo y no tiene isótopos estables.","u":"Diagnóstico médico con trazadores (Tc‑99m) en millones de estudios al año.","k":"Se detectó en estrellas gigantes rojas, lo que demostró que las estrellas fabrican elementos."},{"z":44,"s":"Ru","n":"Rutenio","c":"transition","m":101.07,"mb":false,"g":8,"p":5,"b":"d","cfg":"[Kr] 4d7 5s","sh":[2,8,18,15,1],"en":2.2,"mp":2607.0,"bp":4423.0,"dens":12.45,"ie":7.36,"rad":130.0,"ab":0.001,"ox":[3,4],"radio":false,"o":"De Ruthenia, nombre latino de Rusia.","q":"Karl Ernst Claus, 1844","d":"Metal duro y plateado del grupo del platino.","u":"Contactos eléctricos, catalizadores, discos duros y joyería.","k":"Se usa para endurecer el platino y el paladio."},{"z":45,"s":"Rh","n":"Rodio","c":"transition","m":102.9055,"mb":false,"g":9,"p":5,"b":"d","cfg":"[Kr] 4d8 5s","sh":[2,8,18,16,1],"en":2.28,"mp":2237.0,"bp":3968.0,"dens":12.41,"ie":7.46,"rad":135.0,"ab":0.001,"ox":[3],"radio":false,"o":"Del griego rhodon, «rosa», por el color de sus sales.","q":"William Hyde Wollaston, 1804","d":"Metal plateado muy raro, caro y muy reflectante.","u":"Convertidores catalíticos de autos, baños de joyería y espejos.","k":"Con frecuencia es más caro que el oro y el platino."},{"z":46,"s":"Pd","n":"Paladio","c":"transition","m":106.42,"mb":false,"g":10,"p":5,"b":"d","cfg":"[Kr] 4d10","sh":[2,8,18,18],"en":2.2,"mp":1828.0,"bp":3236.0,"dens":12.023,"ie":8.34,"rad":140.0,"ab":0.015,"ox":[2,4],"radio":false,"o":"Del asteroide Palas, descubierto en 1802.","q":"William Hyde Wollaston, 1802 (anunciado en 1803)","d":"Metal plateado del grupo del platino que absorbe grandes cantidades de hidrógeno.","u":"Convertidores catalíticos, electrónica, joyería, odontología y catalizadores de química orgánica.","k":"Puede absorber hasta 900 veces su propio volumen de hidrógeno."},{"z":47,"s":"Ag","n":"Plata","c":"transition","m":107.8682,"mb":false,"g":11,"p":5,"b":"d","cfg":"[Kr] 4d10 5s","sh":[2,8,18,18,1],"en":1.93,"mp":1235.0,"bp":2435.0,"dens":10.49,"ie":7.58,"rad":160.0,"ab":0.075,"ox":[1],"radio":false,"o":"Su símbolo Ag viene del latín argentum.","q":"Conocido desde la antigüedad","d":"Metal blanco brillante; es el mejor conductor de la electricidad y del calor.","u":"Joyería, cubiertos, espejos, electrónica, paneles solares y fotografía.","k":"El nombre de Argentina viene del latín argentum, «plata»."},{"z":48,"s":"Cd","n":"Cadmio","c":"transition","m":112.414,"mb":false,"g":12,"p":5,"b":"d","cfg":"[Kr] 4d10 5s2","sh":[2,8,18,18,2],"en":1.69,"mp":594.22,"bp":1040.0,"dens":8.65,"ie":8.99,"rad":155.0,"ab":0.15,"ox":[2],"radio":false,"o":"Del latín cadmia, nombre antiguo del carbonato de zinc.","q":"Friedrich Stromeyer, 1817","d":"Metal blando, azulado y muy tóxico.","u":"Baterías de níquel-cadmio, pigmentos amarillos y rojos, recubrimientos y puntos cuánticos.","k":"La contaminación por cadmio provocó en Japón la enfermedad itai-itai («duele, duele»)."},{"z":49,"s":"In","n":"Indio","c":"post","m":114.818,"mb":false,"g":13,"p":5,"b":"p","cfg":"[Kr] 4d10 5s2 5p","sh":[2,8,18,18,3],"en":1.78,"mp":429.75,"bp":2345.0,"dens":7.31,"ie":5.79,"rad":155.0,"ab":0.25,"ox":[3],"radio":false,"o":"Del índigo, por la línea azul de su espectro.","q":"Ferdinand Reich y Hieronymus Richter, 1863","d":"Metal blando y plateado; se raya con la uña.","u":"Pantallas táctiles y LCD (óxido de indio y estaño), soldaduras y semiconductores.","k":"Al doblarlo emite un crujido parecido a un grito, como el estaño."},{"z":50,"s":"Sn","n":"Estaño","c":"post","m":118.71,"mb":false,"g":14,"p":5,"b":"p","cfg":"[Kr] 4d10 5s2 5p2","sh":[2,8,18,18,4],"en":1.96,"mp":505.08,"bp":2875.0,"dens":7.265,"ie":7.34,"rad":145.0,"ab":2.3,"ox":[2,4],"radio":false,"o":"Del latín stannum, de donde viene su símbolo Sn.","q":"Conocido desde la antigüedad","d":"Metal plateado, blando y maleable, resistente a la corrosión.","u":"Hojalata para latas, soldaduras y bronce (con cobre).","k":"Aleado con cobre forma el bronce, que dio nombre a toda una edad de la historia."},{"z":51,"s":"Sb","n":"Antimonio","c":"metalloid","m":121.76,"mb":false,"g":15,"p":5,"b":"p","cfg":"[Kr] 4d10 5s2 5p3","sh":[2,8,18,18,5],"en":2.05,"mp":903.78,"bp":1860.0,"dens":6.697,"ie":8.61,"rad":145.0,"ab":0.2,"ox":[-3,3,5],"radio":false,"o":"Del griego anti-monos, «no solo»; su símbolo Sb viene del latín stibium.","q":"Conocido desde la antigüedad","d":"Metaloide plateado y quebradizo.","u":"Retardantes de llama, baterías, aleaciones y semiconductores.","k":"En el antiguo Egipto se usaba su sulfuro como cosmético para los ojos."},{"z":52,"s":"Te","n":"Telurio","c":"metalloid","m":127.6,"mb":false,"g":16,"p":5,"b":"p","cfg":"[Kr] 4d10 5s2 5p4","sh":[2,8,18,18,6],"en":2.1,"mp":722.66,"bp":1261.0,"dens":6.24,"ie":9.01,"rad":140.0,"ab":0.001,"ox":[-2,2,4,6],"radio":false,"o":"Del latín tellus, «Tierra».","q":"Franz-Joseph Müller von Reichenstein, 1782","d":"Metaloide plateado y quebradizo, raro en la corteza terrestre.","u":"Paneles solares de telururo de cadmio, aleaciones y discos regrabables.","k":"En la corteza terrestre es más raro que el platino."},{"z":53,"s":"I","n":"Yodo","c":"halogen","m":126.90447,"mb":false,"g":17,"p":5,"b":"p","cfg":"[Kr] 4d10 5s2 5p5","sh":[2,8,18,18,7],"en":2.66,"mp":386.85,"bp":457.4,"dens":4.933,"ie":10.45,"rad":140.0,"ab":0.45,"ox":[-1,1,3,5,7],"radio":false,"o":"Del griego iodes, «violeta».","q":"Bernard Courtois, 1811","d":"Sólido gris violáceo que se sublima y da un vapor violeta.","u":"Desinfectantes, sal yodada, medios de contraste para rayos X y pantallas LCD.","k":"La tiroides necesita yodo para producir sus hormonas; su falta causa bocio."},{"z":54,"s":"Xe","n":"Xenón","c":"noble","m":131.293,"mb":false,"g":18,"p":5,"b":"p","cfg":"[Kr] 4d10 5s2 5p6","sh":[2,8,18,18,8],"en":2.6,"mp":161.4,"bp":165.03,"dens":0.005894,"ie":12.13,"rad":null,"ab":2.9999999999999997e-05,"ox":[2,4,6],"radio":false,"o":"Del griego xenos, «extranjero».","q":"William Ramsay y Morris Travers, 1898","d":"Gas noble denso e incoloro. Aunque es «noble», puede formar compuestos.","u":"Faros de auto, lámparas de proyección, propulsores iónicos de naves espaciales y anestesia.","k":"En 1962 se logró el primer compuesto de un gas noble, de xenón, y se rompió la idea de que eran totalmente inertes."},{"z":55,"s":"Cs","n":"Cesio","c":"alkali","m":132.90545196,"mb":false,"g":1,"p":6,"b":"s","cfg":"[Xe] 6s","sh":[2,8,18,18,8,1],"en":0.79,"mp":301.59,"bp":944.0,"dens":1.93,"ie":3.89,"rad":260.0,"ab":3.0,"ox":[1],"radio":false,"o":"Del latín caesius, «azul cielo», por las líneas azules de su espectro.","q":"Robert Bunsen y Gustav Kirchhoff, 1860","d":"Metal muy blando y dorado pálido; se funde cerca de 28.5 °C.","u":"Relojes atómicos, perforación petrolera y células fotoeléctricas.","k":"El segundo se define a partir de las vibraciones de un átomo de cesio‑133."},{"z":56,"s":"Ba","n":"Bario","c":"alkaline","m":137.327,"mb":false,"g":2,"p":6,"b":"s","cfg":"[Xe] 6s2","sh":[2,8,18,18,8,2],"en":0.89,"mp":1000.0,"bp":2170.0,"dens":3.51,"ie":5.21,"rad":215.0,"ab":425.0,"ox":[2],"radio":false,"o":"Del griego barys, «pesado».","q":"Carl Wilhelm Scheele, 1772 (aislado por Humphry Davy, 1808)","d":"Metal blando y plateado que se oxida rápido.","u":"Contraste en radiografías del aparato digestivo, fuegos artificiales verdes y lodos de perforación.","k":"La «papilla de bario» que se toma antes de una radiografía digestiva contiene sulfato de bario."},{"z":57,"s":"La","n":"Lantano","c":"lan","m":138.90547,"mb":false,"g":null,"p":6,"b":"f","cfg":"[Xe] 5d 6s2","sh":[2,8,18,18,9,2],"en":1.1,"mp":1193.0,"bp":3737.0,"dens":6.162,"ie":5.58,"rad":195.0,"ab":39.0,"ox":[3],"radio":false,"o":"Del griego lanthanein, «estar oculto».","q":"Carl Gustaf Mosander, 1839","d":"Metal plateado y blando que da nombre a la serie de los lantánidos.","u":"Lentes de cámara, baterías de autos híbridos, catalizadores de refinería y piedras de encendedor.","k":"Estuvo oculto dentro del mineral de cerio hasta que Mosander lo separó."},{"z":58,"s":"Ce","n":"Cerio","c":"lan","m":140.116,"mb":false,"g":null,"p":6,"b":"f","cfg":"[Xe] 4f 5d 6s2","sh":[2,8,18,19,9,2],"en":1.12,"mp":1068.0,"bp":3716.0,"dens":6.77,"ie":5.54,"rad":185.0,"ab":66.5,"ox":[3,4],"radio":false,"o":"Del asteroide Ceres.","q":"Wilhelm Hisinger y Jöns Jacob Berzelius; Martin Klaproth (por separado), 1803","d":"El más abundante de los lantánidos.","u":"Convertidores catalíticos, pulido de vidrio, encendedores y vidrio autolimpiable.","k":"Es más abundante en la corteza que el cobre o el plomo."},{"z":59,"s":"Pr","n":"Praseodimio","c":"lan","m":140.90766,"mb":false,"g":null,"p":6,"b":"f","cfg":"[Xe] 4f3 6s2","sh":[2,8,18,21,8,2],"en":1.13,"mp":1208.0,"bp":3793.0,"dens":6.77,"ie":5.47,"rad":185.0,"ab":9.2,"ox":[3],"radio":false,"o":"Del griego prasios didymos, «gemelo verde».","q":"Carl Auer von Welsbach, 1885","d":"Metal blando y plateado que forma sales verdes.","u":"Imanes potentes, vidrio de soldadores y pigmentos amarillos para cerámica.","k":"Auer von Welsbach separó el supuesto elemento «didimio» en dos: praseodimio y neodimio."},{"z":60,"s":"Nd","n":"Neodimio","c":"lan","m":144.242,"mb":false,"g":null,"p":6,"b":"f","cfg":"[Xe] 4f4 6s2","sh":[2,8,18,22,8,2],"en":1.14,"mp":1297.0,"bp":3347.0,"dens":7.01,"ie":5.53,"rad":185.0,"ab":41.5,"ox":[3],"radio":false,"o":"Del griego neos didymos, «gemelo nuevo».","q":"Carl Auer von Welsbach, 1885","d":"Metal plateado que forma los imanes permanentes más potentes.","u":"Imanes en audífonos, motores de autos eléctricos, turbinas eólicas y discos duros; láseres.","k":"Los imanes de neodimio son los más fuertes disponibles comercialmente."},{"z":61,"s":"Pm","n":"Prometio","c":"lan","m":145.0,"mb":true,"g":null,"p":6,"b":"f","cfg":"[Xe] 4f5 6s2","sh":[2,8,18,23,8,2],"en":1.13,"mp":1315.0,"bp":3273.0,"dens":7.26,"ie":5.58,"rad":185.0,"ab":2e-19,"ox":[3],"radio":true,"o":"De Prometeo, que robó el fuego a los dioses.","q":"Jacob Marinsky, Lawrence Glendenin y Charles Coryell, 1945","d":"Radiactivo y sin isótopos estables, casi no existe en la naturaleza.","u":"Pinturas luminosas, baterías nucleares pequeñas y espesores de materiales.","k":"Se estima que hay menos de un kilogramo en toda la corteza terrestre."},{"z":62,"s":"Sm","n":"Samario","c":"lan","m":150.36,"mb":false,"g":null,"p":6,"b":"f","cfg":"[Xe] 4f6 6s2","sh":[2,8,18,24,8,2],"en":1.17,"mp":1345.0,"bp":2067.0,"dens":7.52,"ie":5.64,"rad":185.0,"ab":7.05,"ox":[3],"radio":false,"o":"Del mineral samarskita, nombrado por el ingeniero ruso Vasili Samarsky-Bykhovets.","q":"Paul-Émile Lecoq de Boisbaudran, 1879","d":"Metal plateado de las tierras raras.","u":"Imanes de samario-cobalto, láseres, reactores y tratamiento del dolor de metástasis óseas.","k":"Su nombre rinde homenaje a una persona, aunque de forma indirecta, a través del mineral."},{"z":63,"s":"Eu","n":"Europio","c":"lan","m":151.964,"mb":false,"g":null,"p":6,"b":"f","cfg":"[Xe] 4f7 6s2","sh":[2,8,18,25,8,2],"en":1.2,"mp":1099.0,"bp":1802.0,"dens":5.244,"ie":5.67,"rad":185.0,"ab":2.0,"ox":[2,3],"radio":false,"o":"Del continente Europa.","q":"Eugène-Anatole Demarçay, 1896 (aislado en 1901)","d":"Metal blando; el más reactivo de las tierras raras.","u":"Fósforos rojos y azules en pantallas y lámparas fluorescentes, y tintas antifalsificación.","k":"Los billetes en euros llevan europio, que brilla bajo luz ultravioleta."},{"z":64,"s":"Gd","n":"Gadolinio","c":"lan","m":157.25,"mb":false,"g":null,"p":6,"b":"f","cfg":"[Xe] 4f7 5d 6s2","sh":[2,8,18,25,9,2],"en":1.2,"mp":1585.0,"bp":3546.0,"dens":7.9,"ie":6.15,"rad":180.0,"ab":6.2,"ox":[3],"radio":false,"o":"Del mineral gadolinita y de Johan Gadolin.","q":"Jean Charles Galissard de Marignac, 1880","d":"Metal plateado y maleable, fuertemente magnético.","u":"Contraste para resonancias magnéticas, control de reactores y pantallas.","k":"Es magnético a temperatura ambiente, algo poco común entre los metales."},{"z":65,"s":"Tb","n":"Terbio","c":"lan","m":158.92535,"mb":false,"g":null,"p":6,"b":"f","cfg":"[Xe] 4f9 6s2","sh":[2,8,18,27,8,2],"en":1.2,"mp":1629.0,"bp":3503.0,"dens":8.23,"ie":5.86,"rad":175.0,"ab":1.2,"ox":[3],"radio":false,"o":"De Ytterby, Suecia.","q":"Carl Gustaf Mosander, 1843","d":"Metal plateado de las tierras raras.","u":"Fósforo verde de pantallas y lámparas, sensores magnéticos y aleaciones.","k":"Es uno de los cuatro elementos que deben su nombre a Ytterby."},{"z":66,"s":"Dy","n":"Disprosio","c":"lan","m":162.5,"mb":false,"g":null,"p":6,"b":"f","cfg":"[Xe] 4f10 6s2","sh":[2,8,18,28,8,2],"en":1.22,"mp":1680.0,"bp":2840.0,"dens":8.54,"ie":5.94,"rad":175.0,"ab":5.2,"ox":[3],"radio":false,"o":"Del griego dysprositos, «difícil de obtener».","q":"Paul-Émile Lecoq de Boisbaudran, 1886","d":"Metal plateado de las tierras raras con gran respuesta magnética.","u":"Imanes de neodimio resistentes al calor, varillas de control de reactores y discos de datos.","k":"Lecoq necesitó más de 30 intentos para separarlo."},{"z":67,"s":"Ho","n":"Holmio","c":"lan","m":164.93033,"mb":false,"g":null,"p":6,"b":"f","cfg":"[Xe] 4f11 6s2","sh":[2,8,18,29,8,2],"en":1.23,"mp":1734.0,"bp":2993.0,"dens":8.79,"ie":6.02,"rad":175.0,"ab":1.3,"ox":[3],"radio":false,"o":"De Holmia, nombre latino de Estocolmo.","q":"Marc Delafontaine y Jacques-Louis Soret (1878); Per Teodor Cleve (1879)","d":"Metal plateado con el mayor momento magnético de todos los elementos.","u":"Láseres médicos, calibración de espectrómetros e imanes muy intensos.","k":"Tiene el mayor momento magnético de la tabla."},{"z":68,"s":"Er","n":"Erbio","c":"lan","m":167.259,"mb":false,"g":null,"p":6,"b":"f","cfg":"[Xe] 4f12 6s2","sh":[2,8,18,30,8,2],"en":1.24,"mp":1802.0,"bp":3141.0,"dens":9.066,"ie":6.11,"rad":175.0,"ab":3.5,"ox":[3],"radio":false,"o":"De Ytterby, Suecia.","q":"Carl Gustaf Mosander, 1843","d":"Metal plateado cuyos compuestos son rosados.","u":"Amplificadores de fibra óptica, láseres médicos y dentales, y vidrio rosa.","k":"Gran parte de internet por fibra óptica de larga distancia se amplifica con erbio."},{"z":69,"s":"Tm","n":"Tulio","c":"lan","m":168.93422,"mb":false,"g":null,"p":6,"b":"f","cfg":"[Xe] 4f13 6s2","sh":[2,8,18,31,8,2],"en":1.25,"mp":1818.0,"bp":2223.0,"dens":9.32,"ie":6.18,"rad":175.0,"ab":0.52,"ox":[3],"radio":false,"o":"De Thule, nombre antiguo de Escandinavia.","q":"Per Teodor Cleve, 1879","d":"Uno de los lantánidos más escasos.","u":"Láseres médicos y equipos portátiles de rayos X.","k":"Es el segundo lantánido más raro, después del prometio."},{"z":70,"s":"Yb","n":"Iterbio","c":"lan","m":173.045,"mb":false,"g":null,"p":6,"b":"f","cfg":"[Xe] 4f14 6s2","sh":[2,8,18,32,8,2],"en":1.1,"mp":1097.0,"bp":1469.0,"dens":6.9,"ie":6.25,"rad":175.0,"ab":3.2,"ox":[3],"radio":false,"o":"De Ytterby, Suecia.","q":"Jean Charles Galissard de Marignac, 1878","d":"Metal plateado y blando de las tierras raras.","u":"Relojes atómicos ópticos, láseres y aleaciones para acero.","k":"Sus relojes atómicos ópticos están entre los más precisos construidos."},{"z":71,"s":"Lu","n":"Lutecio","c":"lan","m":174.9668,"mb":false,"g":3,"p":6,"b":"d","cfg":"[Xe] 4f14 5d 6s2","sh":[2,8,18,32,9,2],"en":1.27,"mp":1925.0,"bp":3675.0,"dens":9.841,"ie":5.43,"rad":175.0,"ab":0.8,"ox":[3],"radio":false,"o":"De Lutetia, nombre latino de París.","q":"Georges Urbain, Carl Auer von Welsbach y Charles James, 1907","d":"El lantánido más denso y duro; metal plateado.","u":"Tomografías PET, catalizadores de refinería y tratamientos de ciertos cánceres.","k":"Es el último de los lantánidos y de los más caros."},{"z":72,"s":"Hf","n":"Hafnio","c":"transition","m":178.49,"mb":false,"g":4,"p":6,"b":"d","cfg":"[Xe] 4f14 5d2 6s2","sh":[2,8,18,32,10,2],"en":1.3,"mp":2506.0,"bp":4876.0,"dens":13.31,"ie":6.83,"rad":155.0,"ab":3.0,"ox":[4],"radio":false,"o":"De Hafnia, nombre latino de Copenhague.","q":"Dirk Coster y George de Hevesy, 1923","d":"Metal plateado y dúctil, resistente a la corrosión y muy parecido al circonio.","u":"Barras de control de reactores, chips (aislantes de compuerta) y superaleaciones.","k":"Fue el penúltimo elemento estable en descubrirse; el último fue el renio."},{"z":73,"s":"Ta","n":"Tántalo","c":"transition","m":180.94788,"mb":false,"g":5,"p":6,"b":"d","cfg":"[Xe] 4f14 5d3 6s2","sh":[2,8,18,32,11,2],"en":1.5,"mp":3290.0,"bp":5731.0,"dens":16.69,"ie":7.55,"rad":145.0,"ab":2.0,"ox":[5],"radio":false,"o":"De Tántalo, personaje mitológico condenado a no alcanzar lo que deseaba: el metal no reacciona con los ácidos.","q":"Anders Gustaf Ekeberg, 1802","d":"Metal gris azulado, denso y muy resistente a la corrosión.","u":"Condensadores de celulares y computadoras, instrumentos quirúrgicos e implantes.","k":"Muchos dispositivos electrónicos modernos llevan condensadores de tántalo."},{"z":74,"s":"W","n":"Wolframio","c":"transition","m":183.84,"mb":false,"g":6,"p":6,"b":"d","cfg":"[Xe] 4f14 5d4 6s2","sh":[2,8,18,32,12,2],"en":2.36,"mp":3695.0,"bp":6203.0,"dens":19.25,"ie":7.86,"rad":135.0,"ab":1.25,"ox":[4,6],"radio":false,"o":"Del alemán Wolfram, de donde viene su símbolo W. También se llama tungsteno («piedra pesada» en sueco).","q":"Fausto y Juan José de Elhuyar, 1783 (Scheele había identificado su óxido en 1781)","d":"El metal con el punto de fusión más alto (3,422 °C).","u":"Filamentos de bombillas, herramientas de corte, electrodos de soldadura y blindajes.","k":"Los hermanos Elhuyar lo aislaron en Bergara, País Vasco; Fausto fue después director del Real Seminario de Minería en la Ciudad de México."},{"z":75,"s":"Re","n":"Renio","c":"transition","m":186.207,"mb":false,"g":7,"p":6,"b":"d","cfg":"[Xe] 4f14 5d5 6s2","sh":[2,8,18,32,13,2],"en":1.9,"mp":3459.0,"bp":5869.0,"dens":21.02,"ie":7.83,"rad":135.0,"ab":0.0007,"ox":[4,6,7],"radio":false,"o":"Del latín Rhenus, «Rin».","q":"Walter Noddack, Ida Tacke y Otto Berg, 1925","d":"Metal plateado y muy denso con uno de los puntos de fusión más altos.","u":"Motores de aviones a reacción (superaleaciones) y catalizadores de gasolina.","k":"Fue el último elemento estable que se descubrió."},{"z":76,"s":"Os","n":"Osmio","c":"transition","m":190.23,"mb":false,"g":8,"p":6,"b":"d","cfg":"[Xe] 4f14 5d6 6s2","sh":[2,8,18,32,14,2],"en":2.2,"mp":3306.0,"bp":5285.0,"dens":22.59,"ie":8.44,"rad":130.0,"ab":0.0015,"ox":[4,8],"radio":false,"o":"Del griego osme, «olor».","q":"Smithson Tennant, 1803","d":"Metal azul grisáceo; el elemento natural más denso (22.59 g/cm³).","u":"Puntas de plumas fuente, contactos eléctricos y tinciones de microscopía.","k":"Su óxido huele fuerte y es tóxico, de ahí el nombre."},{"z":77,"s":"Ir","n":"Iridio","c":"transition","m":192.217,"mb":false,"g":9,"p":6,"b":"d","cfg":"[Xe] 4f14 5d7 6s2","sh":[2,8,18,32,15,2],"en":2.2,"mp":2719.0,"bp":4701.0,"dens":22.56,"ie":8.97,"rad":135.0,"ab":0.001,"ox":[3,4],"radio":false,"o":"Del latín iris, «arcoíris», por los colores de sus sales.","q":"Smithson Tennant, 1803","d":"Metal plateado muy duro y de los más resistentes a la corrosión.","u":"Bujías, crisoles, aleaciones con platino y plumas.","k":"Una capa rica en iridio en rocas de hace 66 millones de años es la huella del asteroide que extinguió a los dinosaurios."},{"z":78,"s":"Pt","n":"Platino","c":"transition","m":195.084,"mb":false,"g":10,"p":6,"b":"d","cfg":"[Xe] 4f14 5d9 6s","sh":[2,8,18,32,17,1],"en":2.28,"mp":2041.0,"bp":4098.0,"dens":21.45,"ie":8.96,"rad":135.0,"ab":0.005,"ox":[2,4],"radio":false,"o":"Del español platina, «plata pequeña».","q":"Antonio de Ulloa lo describió en Europa en 1748; pueblos de América lo usaban antes","d":"Metal plateado, denso y maleable que no se oxida.","u":"Joyería, convertidores catalíticos, quimioterapia (cisplatino) y material de laboratorio.","k":"Los españoles lo llamaron «platina» en Colombia con desdén, porque lo veían como plata impura."},{"z":79,"s":"Au","n":"Oro","c":"transition","m":196.966569,"mb":false,"g":11,"p":6,"b":"d","cfg":"[Xe] 4f14 5d10 6s","sh":[2,8,18,32,18,1],"en":2.54,"mp":1337.0,"bp":3129.0,"dens":19.3,"ie":9.23,"rad":135.0,"ab":0.004,"ox":[1,3],"radio":false,"o":"Su símbolo Au viene del latín aurum.","q":"Conocido desde la antigüedad","d":"Metal amarillo, blando y casi inalterable.","u":"Joyería, reservas financieras, electrónica y odontología.","k":"Probablemente casi todo el oro de la Tierra se formó en choques de estrellas de neutrones."},{"z":80,"s":"Hg","n":"Mercurio","c":"transition","m":200.592,"mb":false,"g":12,"p":6,"b":"d","cfg":"[Xe] 4f14 5d10 6s2","sh":[2,8,18,32,18,2],"en":2.0,"mp":234.43,"bp":629.88,"dens":13.534,"ie":10.44,"rad":150.0,"ab":0.085,"ox":[1,2],"radio":false,"o":"Del dios romano Mercurio; su símbolo Hg viene del latín hydrargyrum, «plata líquida».","q":"Conocido desde la antigüedad","d":"Único metal líquido a temperatura ambiente. Es muy tóxico.","u":"Termómetros antiguos, lámparas fluorescentes, amalgamas y, en desuso, minería de oro.","k":"En español antiguo se le llamaba azogue, palabra de origen árabe."},{"z":81,"s":"Tl","n":"Talio","c":"post","m":204.38,"mb":false,"g":13,"p":6,"b":"p","cfg":"[Xe] 4f14 5d10 6s2 6p","sh":[2,8,18,32,18,3],"en":1.62,"mp":577.0,"bp":1746.0,"dens":11.85,"ie":6.11,"rad":190.0,"ab":0.85,"ox":[1,3],"radio":false,"o":"Del griego thallos, «brote verde», por la línea verde de su espectro.","q":"William Crookes, 1861","d":"Metal blando y gris, muy tóxico.","u":"Detectores infrarrojos y cristales de centelleo; antes, raticidas.","k":"Una novela de Agatha Christie, «El caballo pálido», ayudó a reconocer un envenenamiento real con talio."},{"z":82,"s":"Pb","n":"Plomo","c":"post","m":207.2,"mb":false,"g":14,"p":6,"b":"p","cfg":"[Xe] 4f14 5d10 6s2 6p2","sh":[2,8,18,32,18,4],"en":1.87,"mp":600.61,"bp":2022.0,"dens":11.34,"ie":7.42,"rad":180.0,"ab":14.0,"ox":[2,4],"radio":false,"o":"Del latín plumbum, de donde viene su símbolo Pb.","q":"Conocido desde la antigüedad","d":"Metal denso, gris azulado, blando y tóxico.","u":"Baterías de autos, blindaje contra la radiación, municiones y pesas.","k":"Los romanos lo usaban en tuberías; de plumbum viene la palabra «plomería»."},{"z":83,"s":"Bi","n":"Bismuto","c":"post","m":208.9804,"mb":false,"g":15,"p":6,"b":"p","cfg":"[Xe] 4f14 5d10 6s2 6p3","sh":[2,8,18,32,18,5],"en":2.02,"mp":544.7,"bp":1837.0,"dens":9.78,"ie":7.29,"rad":160.0,"ab":0.0085,"ox":[3],"radio":false,"o":"Del alemán Wismut, de origen incierto.","q":"Conocido desde la antigüedad (Claude François Geoffroy lo distinguió del plomo, 1753)","d":"Metal frágil de brillo rosado y óxido iridiscente. Es poco tóxico.","u":"Medicamentos para el estómago, cosméticos y aleaciones de bajo punto de fusión.","k":"Se creyó estable durante siglos; en 2003 se vio que es radiactivo, con una vida media más de mil millones de veces la edad del universo."},{"z":84,"s":"Po","n":"Polonio","c":"post","m":209.0,"mb":true,"g":16,"p":6,"b":"p","cfg":"[Xe] 4f14 5d10 6s2 6p4","sh":[2,8,18,32,18,6],"en":2.0,"mp":527.0,"bp":1235.0,"dens":9.196,"ie":8.42,"rad":190.0,"ab":2e-10,"ox":[-2,2,4],"radio":true,"o":"De Polonia, país natal de Marie Curie.","q":"Marie y Pierre Curie, 1898","d":"Metal radiactivo y extremadamente tóxico.","u":"Eliminadores de electricidad estática y fuentes de calor para satélites.","k":"Un gramo de polonio‑210 se calienta por sí solo a más de 500 °C."},{"z":85,"s":"At","n":"Astato","c":"halogen","m":210.0,"mb":true,"g":17,"p":6,"b":"p","cfg":"[Xe] 4f14 5d10 6s2 6p5","sh":[2,8,18,32,18,7],"en":2.2,"mp":575.0,"bp":610.0,"dens":8.93,"ie":9.32,"rad":null,"ab":3e-20,"ox":[-1,1],"radio":true,"o":"Del griego astatos, «inestable».","q":"Dale Corson, Kenneth MacKenzie y Emilio Segrè, 1940","d":"El elemento natural más raro; todos sus isótopos son radiactivos.","u":"Se investiga para terapias dirigidas contra el cáncer.","k":"Se calcula que en toda la corteza terrestre hay menos de 30 gramos a la vez."},{"z":86,"s":"Rn","n":"Radón","c":"noble","m":222.0,"mb":true,"g":18,"p":6,"b":"p","cfg":"[Xe] 4f14 5d10 6s2 6p6","sh":[2,8,18,32,18,8],"en":2.2,"mp":202.0,"bp":211.3,"dens":0.00973,"ie":10.75,"rad":null,"ab":4e-13,"ox":[],"radio":true,"o":"Del radio, del que procede.","q":"Friedrich Ernst Dorn, 1900 (Rutherford y Owens vieron antes el torón, 1899)","d":"Gas noble, incoloro y radiactivo, producto de la desintegración del radio. Es el gas más denso.","u":"Casi sin usos; interesa vigilarlo en casas por el riesgo para la salud.","k":"Se acumula en sótanos y es la segunda causa de cáncer de pulmón después del tabaco."},{"z":87,"s":"Fr","n":"Francio","c":"alkali","m":223.0,"mb":true,"g":1,"p":7,"b":"s","cfg":"[Rn] 7s","sh":[2,8,18,32,18,8,1],"en":0.79,"mp":281.0,"bp":890.0,"dens":2.48,"ie":4.07,"rad":null,"ab":1e-18,"ox":[1],"radio":true,"o":"De Francia.","q":"Marguerite Perey, 1939","d":"Metal alcalino extremadamente radiactivo e inestable.","u":"Solo investigación científica.","k":"Nunca se ha reunido una cantidad visible. Perey fue la primera mujer elegida corresponsal de la Academia de Ciencias de Francia."},{"z":88,"s":"Ra","n":"Radio","c":"alkaline","m":226.0,"mb":true,"g":2,"p":7,"b":"s","cfg":"[Rn] 7s2","sh":[2,8,18,32,18,8,2],"en":0.9,"mp":973.0,"bp":2010.0,"dens":5.5,"ie":5.28,"rad":215.0,"ab":9e-07,"ox":[2],"radio":true,"o":"Del latín radius, «rayo».","q":"Marie y Pierre Curie, 1898","d":"Metal alcalinotérreo radiactivo que brilla con luz azul tenue en la oscuridad.","u":"Antes, pinturas luminosas y tratamientos de cáncer; hoy casi sin usos.","k":"Las «chicas del radio», obreras que pintaban esferas de reloj, sufrieron graves daños y cambiaron las leyes de seguridad laboral."},{"z":89,"s":"Ac","n":"Actinio","c":"act","m":227.0,"mb":true,"g":null,"p":7,"b":"f","cfg":"[Rn] 6d 7s2","sh":[2,8,18,32,18,9,2],"en":1.1,"mp":1323.0,"bp":3471.0,"dens":10.0,"ie":5.38,"rad":195.0,"ab":5.5e-10,"ox":[3],"radio":true,"o":"Del griego aktis, «rayo».","q":"André-Louis Debierne, 1899","d":"Metal radiactivo plateado que brilla con luz azul.","u":"Terapias dirigidas contra el cáncer (Ac‑225) y fuente de neutrones.","k":"Da nombre a la serie de los actínidos."},{"z":90,"s":"Th","n":"Torio","c":"act","m":232.0377,"mb":false,"g":null,"p":7,"b":"f","cfg":"[Rn] 6d2 7s2","sh":[2,8,18,32,18,10,2],"en":1.3,"mp":2115.0,"bp":5061.0,"dens":11.7,"ie":6.31,"rad":180.0,"ab":9.6,"ox":[4],"radio":true,"o":"De Thor, dios nórdico del trueno.","q":"Jöns Jacob Berzelius, 1829","d":"Metal plateado y levemente radiactivo, más abundante que el estaño.","u":"Mallas de lámparas de gas, electrodos de soldadura y, en estudio, combustible nuclear.","k":"Es candidato a combustible de reactores más seguros que los de uranio."},{"z":91,"s":"Pa","n":"Protactinio","c":"act","m":231.03588,"mb":false,"g":null,"p":7,"b":"f","cfg":"[Rn] 5f2 6d 7s2","sh":[2,8,18,32,20,9,2],"en":1.5,"mp":1841.0,"bp":4300.0,"dens":15.37,"ie":5.89,"rad":180.0,"ab":1.4e-06,"ox":[5],"radio":true,"o":"Del griego protos y actinio: «antes del actinio», porque se desintegra en él.","q":"Kasimir Fajans y Oswald Göhring (1913); Otto Hahn y Lise Meitner (1917)","d":"Metal plateado raro, radiactivo y tóxico.","u":"Solo investigación científica y datación geológica.","k":"Es uno de los elementos naturales más raros y caros."},{"z":92,"s":"U","n":"Uranio","c":"act","m":238.02891,"mb":false,"g":null,"p":7,"b":"f","cfg":"[Rn] 5f3 6d 7s2","sh":[2,8,18,32,21,9,2],"en":1.38,"mp":1405.0,"bp":4404.0,"dens":19.1,"ie":6.19,"rad":175.0,"ab":2.7,"ox":[4,6],"radio":true,"o":"Del planeta Urano, descubierto ocho años antes.","q":"Martin Heinrich Klaproth, 1789","d":"Metal denso, plateado y radiactivo; el elemento natural más pesado en cantidades apreciables.","u":"Combustible de reactores nucleares, armas nucleares, blindajes y datación de rocas.","k":"La fisión de un kilogramo de uranio‑235 libera tanta energía como varios miles de toneladas de carbón."},{"z":93,"s":"Np","n":"Neptunio","c":"act","m":237.0,"mb":true,"g":null,"p":7,"b":"f","cfg":"[Rn] 5f4 6d 7s2","sh":[2,8,18,32,22,9,2],"en":1.36,"mp":917.0,"bp":4273.0,"dens":20.45,"ie":6.27,"rad":175.0,"ab":3e-12,"ox":[4,5,6],"radio":true,"o":"Del planeta Neptuno.","q":"Edwin McMillan y Philip Abelson, 1940","d":"Radiactivo; el primer elemento transuránico, más allá del uranio.","u":"Detectores de neutrones y producción de plutonio‑238.","k":"Fue el primer elemento sintetizado más pesado que el uranio."},{"z":94,"s":"Pu","n":"Plutonio","c":"act","m":244.0,"mb":true,"g":null,"p":7,"b":"f","cfg":"[Rn] 5f6 7s2","sh":[2,8,18,32,24,8,2],"en":1.28,"mp":912.5,"bp":3501.0,"dens":19.85,"ie":6.03,"rad":175.0,"ab":3e-11,"ox":[3,4,5,6],"radio":true,"o":"Del planeta Plutón.","q":"Glenn Seaborg, Edwin McMillan, Joseph Kennedy y Arthur Wahl, 1940–1941","d":"Metal plateado radiactivo que se calienta por su propia radiación.","u":"Armas nucleares, reactores y generadores de energía de sondas espaciales (Pu‑238).","k":"Las sondas Voyager y el rover Curiosity usan plutonio para generar electricidad."},{"z":95,"s":"Am","n":"Americio","c":"act","m":243.0,"mb":true,"g":null,"p":7,"b":"f","cfg":"[Rn] 5f7 7s2","sh":[2,8,18,32,25,8,2],"en":1.13,"mp":1449.0,"bp":2880.0,"dens":12.0,"ie":5.97,"rad":175.0,"ab":null,"ox":[3],"radio":true,"o":"De América.","q":"Glenn Seaborg, Ralph James, Leon Morgan y Albert Ghiorso, 1944","d":"Metal plateado, radiactivo y sintético.","u":"Detectores de humo domésticos.","k":"Casi todos los detectores de humo iónicos llevan una pizca de americio‑241."},{"z":96,"s":"Cm","n":"Curio","c":"act","m":247.0,"mb":true,"g":null,"p":7,"b":"f","cfg":"[Rn] 5f7 6d 7s2","sh":[2,8,18,32,25,9,2],"en":1.28,"mp":1613.0,"bp":3383.0,"dens":13.51,"ie":5.99,"rad":null,"ab":null,"ox":[3],"radio":true,"o":"De Marie y Pierre Curie.","q":"Glenn Seaborg, Ralph James y Albert Ghiorso, 1944","d":"Metal plateado, radiactivo y sintético.","u":"Fuentes de energía para sondas espaciales y espectrómetros de rayos X.","k":"Algunos rovers marcianos lo han usado para analizar la composición de las rocas."},{"z":97,"s":"Bk","n":"Berkelio","c":"act","m":247.0,"mb":true,"g":null,"p":7,"b":"f","cfg":"[Rn] 5f9 7s2","sh":[2,8,18,32,27,8,2],"en":1.3,"mp":1259.0,"bp":2900.0,"dens":14.78,"ie":6.2,"rad":null,"ab":null,"ox":[3],"radio":true,"o":"De Berkeley, California.","q":"Glenn Seaborg, Stanley Thompson y Albert Ghiorso, 1949","d":"Metal radiactivo y sintético.","u":"Se emplea como blanco para fabricar elementos más pesados.","k":"Fue el blanco con el que se sintetizó el teneso (Z = 117)."},{"z":98,"s":"Cf","n":"Californio","c":"act","m":251.0,"mb":true,"g":null,"p":7,"b":"f","cfg":"[Rn] 5f10 7s2","sh":[2,8,18,32,28,8,2],"en":1.3,"mp":1173.0,"bp":1743.0,"dens":15.1,"ie":6.28,"rad":null,"ab":null,"ox":[3],"radio":true,"o":"De California y de su universidad.","q":"Glenn Seaborg, Stanley Thompson, Albert Ghiorso y Kenneth Street, 1950","d":"Metal radiactivo y sintético que emite neutrones.","u":"Fuente de neutrones para arrancar reactores, detectar oro y petróleo y analizar materiales.","k":"Un solo microgramo de californio‑252 emite millones de neutrones por segundo."},{"z":99,"s":"Es","n":"Einstenio","c":"act","m":252.0,"mb":true,"g":null,"p":7,"b":"f","cfg":"[Rn] 5f11 7s2","sh":[2,8,18,32,29,8,2],"en":1.3,"mp":1133.0,"bp":1269.0,"dens":8.84,"ie":6.37,"rad":null,"ab":null,"ox":[3],"radio":true,"o":"De Albert Einstein.","q":"Albert Ghiorso y equipo, 1952 (anunciado en 1955)","d":"Metal radiactivo y sintético; se ha producido en cantidades de microgramos.","u":"Solo investigación científica.","k":"Se halló en los residuos de la primera bomba de hidrógeno, la prueba «Ivy Mike»."},{"z":100,"s":"Fm","n":"Fermio","c":"act","m":257.0,"mb":true,"g":null,"p":7,"b":"f","cfg":"[Rn] 5f12 7s2","sh":[2,8,18,32,30,8,2],"en":1.3,"mp":1125.0,"bp":null,"dens":9.7,"ie":6.5,"rad":null,"ab":null,"ox":[3],"radio":true,"o":"De Enrico Fermi.","q":"Albert Ghiorso y equipo, 1952 (anunciado en 1955)","d":"Radiactivo y sintético; es el elemento más pesado que se puede formar bombardeando con neutrones.","u":"Solo investigación científica.","k":"También se encontró en los restos de la prueba «Ivy Mike»."},{"z":101,"s":"Md","n":"Mendelevio","c":"act","m":258.0,"mb":true,"g":null,"p":7,"b":"f","cfg":"[Rn] 5f13 7s2","sh":[2,8,18,32,31,8,2],"en":1.3,"mp":1100.0,"bp":null,"dens":10.3,"ie":6.58,"rad":null,"ab":null,"ox":[3],"radio":true,"o":"De Dmitri Mendeléyev, creador de la tabla periódica.","q":"Albert Ghiorso, Glenn Seaborg y equipo, 1955","d":"Radiactivo y sintético; se ha producido solo átomo por átomo.","u":"Solo investigación científica.","k":"Se descubrió con apenas 17 átomos."},{"z":102,"s":"No","n":"Nobelio","c":"act","m":259.0,"mb":true,"g":null,"p":7,"b":"f","cfg":"[Rn] 5f14 7s2","sh":[2,8,18,32,32,8,2],"en":1.3,"mp":1100.0,"bp":null,"dens":9.9,"ie":6.63,"rad":null,"ab":null,"ox":[3],"radio":true,"o":"De Alfred Nobel.","q":"Equipos de Dubná y Berkeley, 1958–1966","d":"Radiactivo y sintético.","u":"Solo investigación científica.","k":"Su descubrimiento fue disputado durante años entre laboratorios de varios países."},{"z":103,"s":"Lr","n":"Lawrencio","c":"act","m":266.0,"mb":true,"g":3,"p":7,"b":"d","cfg":"[Rn] 5f14 7s2 7p1","sh":[2,8,18,32,32,8,3],"en":1.3,"mp":1900.0,"bp":null,"dens":14.4,"ie":4.96,"rad":null,"ab":null,"ox":[3],"radio":true,"o":"De Ernest Lawrence, inventor del ciclotrón.","q":"Albert Ghiorso y equipo, 1961","d":"Sintético; el último de los actínidos.","u":"Solo investigación científica.","k":"Todavía se debate si va en el grupo 3 o entre los actínidos."},{"z":104,"s":"Rf","n":"Rutherfordio","c":"transition","m":267.0,"mb":true,"g":4,"p":7,"b":"d","cfg":"[Rn] 5f14 6d2 7s2","sh":[2,8,18,32,32,10,2],"en":null,"mp":2400.0,"bp":5800.0,"dens":17.0,"ie":6.02,"rad":null,"ab":null,"ox":[4],"radio":true,"o":"De Ernest Rutherford, pionero de la física nuclear.","q":"Dubná (1964) y Berkeley (1969)","d":"Sintético y de vida muy corta; se espera que se parezca al hafnio.","u":"Solo investigación científica.","k":"Los laboratorios de Dubná y Berkeley se disputaron durante años su nombre."},{"z":105,"s":"Db","n":"Dubnio","c":"transition","m":268.0,"mb":true,"g":5,"p":7,"b":"d","cfg":"[Rn] 5f14 6d3 7s2","sh":[2,8,18,32,32,11,2],"en":null,"mp":null,"bp":null,"dens":21.6,"ie":6.8,"rad":null,"ab":null,"ox":[],"radio":true,"o":"De Dubná, ciudad de Rusia con un famoso laboratorio nuclear.","q":"Dubná (1968) y Berkeley (1970)","d":"Sintético y de vida muy corta.","u":"Solo investigación científica.","k":"Dubná ha creado o co-creado varios de los elementos más pesados."},{"z":106,"s":"Sg","n":"Seaborgio","c":"transition","m":267.0,"mb":true,"g":6,"p":7,"b":"d","cfg":"[Rn] 5f14 6d4 7s2","sh":[2,8,18,32,32,12,2],"en":null,"mp":null,"bp":null,"dens":23.5,"ie":7.8,"rad":null,"ab":null,"ox":[],"radio":true,"o":"De Glenn Seaborg, químico nuclear.","q":"Equipo de Berkeley, 1974","d":"Sintético; se produce de a pocos átomos.","u":"Solo investigación científica.","k":"Seaborg fue la primera persona con un elemento bautizado en su honor estando en vida."},{"z":107,"s":"Bh","n":"Bohrio","c":"transition","m":270.0,"mb":true,"g":7,"p":7,"b":"d","cfg":"[Rn] 5f14 6d5 7s2","sh":[2,8,18,32,32,13,2],"en":null,"mp":null,"bp":null,"dens":26.5,"ie":7.7,"rad":null,"ab":null,"ox":[],"radio":true,"o":"De Niels Bohr, padre del modelo atómico.","q":"Equipo de GSI Darmstadt, 1981","d":"Sintético y de vida muy corta.","u":"Solo investigación científica.","k":"Se creó bombardeando bismuto con átomos de cromo."},{"z":108,"s":"Hs","n":"Hassio","c":"transition","m":271.0,"mb":true,"g":8,"p":7,"b":"d","cfg":"[Rn] 5f14 6d6 7s2","sh":[2,8,18,32,32,14,2],"en":null,"mp":null,"bp":null,"dens":28.0,"ie":7.6,"rad":null,"ab":null,"ox":[],"radio":true,"o":"De Hesse (Hassia en latín), el estado alemán donde está Darmstadt.","q":"Peter Armbruster, Gottfried Münzenberg y equipo (GSI), 1984","d":"Sintético; se predice como metal muy denso.","u":"Solo investigación científica.","k":"Es posible que sea uno de los elementos más densos que existen."},{"z":109,"s":"Mt","n":"Meitnerio","c":"transition","m":278.0,"mb":true,"g":9,"p":7,"b":"d","cfg":"[Rn] 5f14 6d7 7s2","sh":[2,8,18,32,32,15,2],"en":null,"mp":null,"bp":null,"dens":27.5,"ie":null,"rad":null,"ab":null,"ox":[],"radio":true,"o":"De Lise Meitner, física que explicó la fisión nuclear.","q":"Equipo de GSI Darmstadt, 1982","d":"Sintético; apenas se han observado unos pocos átomos.","u":"Solo investigación científica.","k":"Meitner explicó la fisión nuclear, pero el Nobel por ella lo recibió solo Otto Hahn."},{"z":110,"s":"Ds","n":"Darmstatio","c":"transition","m":281.0,"mb":true,"g":10,"p":7,"b":"d","cfg":"[Rn] 5f14 6d9 7s1","sh":[2,8,18,32,32,17,1],"en":null,"mp":null,"bp":null,"dens":26.5,"ie":null,"rad":null,"ab":null,"ox":[],"radio":true,"o":"De Darmstadt, ciudad alemana del laboratorio GSI.","q":"Equipo de GSI Darmstadt, 1994","d":"Sintético y de vida muy corta.","u":"Solo investigación científica.","k":"El primer isótopo observado duró unos 170 microsegundos."},{"z":111,"s":"Rg","n":"Roentgenio","c":"transition","m":282.0,"mb":true,"g":11,"p":7,"b":"d","cfg":"[Rn] 5f14 6d10 7s1","sh":[2,8,18,32,32,18,1],"en":null,"mp":null,"bp":null,"dens":23.0,"ie":null,"rad":null,"ab":null,"ox":[],"radio":true,"o":"De Wilhelm Röntgen, descubridor de los rayos X.","q":"Equipo de GSI Darmstadt, 1994","d":"Sintético y de vida muy corta.","u":"Solo investigación científica.","k":"Röntgen ganó el primer premio Nobel de Física, en 1901."},{"z":112,"s":"Cn","n":"Copernicio","c":"transition","m":285.0,"mb":true,"g":12,"p":7,"b":"d","cfg":"[Rn] 5f14 6d10 7s2","sh":[2,8,18,32,32,18,2],"en":null,"mp":283.0,"bp":340.0,"dens":14.0,"ie":null,"rad":null,"ab":null,"ox":[],"radio":true,"o":"De Nicolás Copérnico, que propuso que la Tierra gira alrededor del Sol.","q":"Equipo de GSI Darmstadt, 1996","d":"Sintético. Se predice que sería un metal muy volátil, quizá gaseoso.","u":"Solo investigación científica.","k":"Puede ser el metal más volátil de la tabla."},{"z":113,"s":"Nh","n":"Nihonio","c":"post","m":286.0,"mb":true,"g":13,"p":7,"b":"p","cfg":"[Rn] 5f14 6d10 7s2 7p1","sh":[2,8,18,32,32,18,3],"en":null,"mp":700.0,"bp":1400.0,"dens":16.0,"ie":null,"rad":null,"ab":null,"ox":[],"radio":true,"o":"De Nihon, «Japón» en japonés.","q":"JINR Dubná (2003) y RIKEN (2004); confirmado en 2015","d":"Sintético y de vida muy corta.","u":"Solo investigación científica.","k":"Es el primer elemento descubierto y nombrado en un país asiático."},{"z":114,"s":"Fl","n":"Flerovio","c":"post","m":289.0,"mb":true,"g":14,"p":7,"b":"p","cfg":"[Rn] 5f14 6d10 7s2 7p2","sh":[2,8,18,32,32,18,4],"en":null,"mp":284.0,"bp":null,"dens":11.4,"ie":null,"rad":null,"ab":null,"ox":[],"radio":true,"o":"De Gueorgui Flerov y del laboratorio que lleva su nombre, en Dubná.","q":"JINR Dubná, 1998–1999","d":"Sintético; se predice que se comporta casi como un gas noble.","u":"Solo investigación científica.","k":"Se buscó durante décadas porque se esperaba que estuviera cerca de una «isla de estabilidad»."},{"z":115,"s":"Mc","n":"Moscovio","c":"post","m":290.0,"mb":true,"g":15,"p":7,"b":"p","cfg":"[Rn] 5f14 6d10 7s2 7p3","sh":[2,8,18,32,32,18,5],"en":null,"mp":700.0,"bp":1400.0,"dens":13.5,"ie":null,"rad":null,"ab":null,"ox":[],"radio":true,"o":"De la región de Moscú.","q":"JINR Dubná y Lawrence Livermore, 2003","d":"Sintético y de vida muy corta.","u":"Solo investigación científica.","k":"Se obtuvo al bombardear americio con átomos de calcio‑48."},{"z":116,"s":"Lv","n":"Livermorio","c":"post","m":293.0,"mb":true,"g":16,"p":7,"b":"p","cfg":"[Rn] 5f14 6d10 7s2 7p4","sh":[2,8,18,32,32,18,6],"en":null,"mp":700.0,"bp":1100.0,"dens":12.9,"ie":null,"rad":null,"ab":null,"ox":[],"radio":true,"o":"Del Laboratorio Nacional Lawrence Livermore, en California.","q":"JINR Dubná y Lawrence Livermore, 2000","d":"Sintético y de vida muy corta.","u":"Solo investigación científica.","k":"Se produjo bombardeando curio con calcio‑48."},{"z":117,"s":"Ts","n":"Teneso","c":"halogen","m":294.0,"mb":true,"g":17,"p":7,"b":"p","cfg":"[Rn] 5f14 6d10 7s2 7p5","sh":[2,8,18,32,32,18,7],"en":null,"mp":700.0,"bp":883.0,"dens":7.2,"ie":null,"rad":null,"ab":null,"ox":[],"radio":true,"o":"De Tennessee, estado de EE. UU.","q":"JINR Dubná, Oak Ridge y Vanderbilt, 2009–2010","d":"Sintético; el penúltimo elemento de la tabla.","u":"Solo investigación científica.","k":"Se creó con berkelio fabricado en el laboratorio de Oak Ridge, en Tennessee."},{"z":118,"s":"Og","n":"Oganesón","c":"noble","m":294.0,"mb":true,"g":18,"p":7,"b":"p","cfg":"[Rn] 5f14 6d10 7s2 7p6","sh":[2,8,18,32,32,18,8],"en":null,"mp":325.0,"bp":450.0,"dens":7.0,"ie":null,"rad":null,"ab":null,"ox":[],"radio":true,"o":"De Yuri Oganessian, físico nuclear.","q":"JINR Dubná y Lawrence Livermore, 2002 (confirmado en 2006)","d":"El elemento más pesado conocido; cierra la fila 7.","u":"Solo investigación científica.","k":"Oganessian es una de las dos únicas personas con un elemento nombrado en su honor en vida (la otra es Seaborg)."}];
+
+const CATS = [
+  ['alkali', 'Metales alcalinos'], ['alkaline', 'Alcalinotérreos'], ['transition', 'Metales de transición'],
+  ['post', 'Otros metales'], ['metalloid', 'Metaloides'], ['nonmetal', 'No metales'],
+  ['halogen', 'Halógenos'], ['noble', 'Gases nobles'], ['lan', 'Lantánidos'], ['act', 'Actínidos']
+];
+const CAT_NAME = Object.fromEntries(CATS);
+const ST_NAME = { s: 'Sólido', l: 'Líquido', g: 'Gas', u: 'Sin datos' };
+
+const $ = (id) => document.getElementById(id);
+const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const N = (x, d = 2) => (x == null || isNaN(x)) ? '—' : Number(x).toLocaleString('es-MX', { maximumFractionDigits: d });
+const sgn = (n) => (n > 0 ? '+' + n : '−' + Math.abs(n));
+
+function pos(e) {
+  if (e.z >= 57 && e.z <= 70) return [10, 4 + e.z - 57];
+  if (e.z >= 89 && e.z <= 102) return [11, 4 + e.z - 89];
+  return [e.p + 1, e.g + 1];
+}
+function stateAt(e, T) {
+  if (e.z >= 104 || [85, 87, 100, 101, 102, 103].includes(e.z) || e.mp == null) return 'u';
+  if (T < e.mp) return 's';
+  if (e.bp == null) return 'u';
+  return T < e.bp ? 'l' : 'g';
+}
+
+/* ---------- Tabla ---------- */
+const table = $('table');
+const tiles = [];
+(function build() {
+  for (let g = 1; g <= 18; g++) table.insertAdjacentHTML('beforeend', `<div class="lab" style="grid-row:1;grid-column:${g + 1}" aria-hidden="true">${g}</div>`);
+  for (let p = 1; p <= 7; p++) table.insertAdjacentHTML('beforeend', `<div class="lab" style="grid-row:${p + 1};grid-column:1" aria-hidden="true">${p}</div>`);
+  table.insertAdjacentHTML('beforeend', `<div class="lab fam" style="grid-row:10;grid-column:1/4" aria-hidden="true">Lantánidos</div><div class="lab fam" style="grid-row:11;grid-column:1/4" aria-hidden="true">Actínidos</div>`);
+  const frag = document.createDocumentFragment();
+  E.forEach((e, i) => {
+    const [r, c] = pos(e);
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tile';
+    b.dataset.i = i;
+    b.dataset.c = e.c;
+    b.style.gridRow = r;
+    b.style.gridColumn = c;
+    b.setAttribute('aria-label', `${e.n}, número atómico ${e.z}`);
+    b.innerHTML = `<span class="z">${e.z}</span><span class="sym">${e.s}</span><span class="nm">${e.n}</span>`;
+    frag.appendChild(b);
+    tiles.push(b);
+  });
+  table.appendChild(frag);
+})();
+table.addEventListener('click', (ev) => {
+  const t = ev.target.closest('.tile');
+  if (t) openFicha(+t.dataset.i);
+});
+
+/* ---------- Panel: leyenda, vistas, temperatura ---------- */
+let filterCat = null, query = '', matchSet = null, view = 'cat';
+const legend = $('legend');
+CATS.forEach(([k, n]) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'chip'; b.dataset.k = k; b.setAttribute('aria-pressed', 'false');
+  b.style.setProperty('--cat', `var(--c-${k})`);
+  b.innerHTML = `<span class="dot"></span><span class="cn">${n}</span>`;
+  b.addEventListener('click', () => {
+    filterCat = filterCat === k ? null : k;
+    legend.querySelectorAll('.chip').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.k === filterCat)));
+    applyDim();
+  });
+  legend.appendChild(b);
+});
+
+function applyDim() {
+  tiles.forEach((t, i) => {
+    const e = E[i];
+    const off = (filterCat && e.c !== filterCat) || (matchSet && !matchSet.has(e.z));
+    t.classList.toggle('dim', !!off);
+  });
+}
+
+const T_MAX = 6000;
+const vToT = (v) => T_MAX * Math.pow(v / 1000, 2);
+const tToV = (T) => Math.round(1000 * Math.sqrt(T / T_MAX));
+const range = $('trange');
+function updateTemp() {
+  const T = Math.max(0, vToT(+range.value));
+  const C = T - 273.15;
+  $('tc').textContent = `${N(C, 0).replace('-', '−')} °C`;
+  $('tk').textContent = `${N(T, 0)} K`;
+  range.setAttribute('aria-valuetext', `${N(C, 0)} grados Celsius, ${N(T, 0)} kelvin`);
+  const cnt = { s: 0, l: 0, g: 0, u: 0 };
+  tiles.forEach((t, i) => { const s = stateAt(E[i], T); t.dataset.st = s; cnt[s]++; });
+  $('states').innerHTML = ['s', 'l', 'g', 'u'].map((k) =>
+    `<span><i class="${k === 'u' ? 'u' : ''}" style="--cat:var(--s-${{ s: 'solid', l: 'liquid', g: 'gas', u: 'solid' }[k]})"></i>${ST_NAME[k]} <b>${cnt[k]}</b></span>`).join('');
+}
+range.addEventListener('input', updateTemp);
+[['Nitrógeno líquido', 77], ['Ambiente', 298.15], ['Agua hirviendo', 373.15], ['Acero fundido', 1811], ['Superficie del Sol', 5772]].forEach(([n, T]) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.textContent = n;
+  b.addEventListener('click', () => { range.value = tToV(T); updateTemp(); });
+  $('presets').appendChild(b);
+});
+range.value = tToV(298.15);
+updateTemp();
+
+function setView(v) {
+  view = v;
+  table.dataset.view = v;
+  $('v-cat').setAttribute('aria-pressed', String(v === 'cat'));
+  $('v-est').setAttribute('aria-pressed', String(v === 'estado'));
+  $('pane-cat').hidden = v !== 'cat';
+  $('pane-est').hidden = v !== 'estado';
+  if (v === 'estado') { filterCat = null; legend.querySelectorAll('.chip').forEach((x) => x.setAttribute('aria-pressed', 'false')); applyDim(); }
+}
+function setLayout(l) {
+  table.dataset.layout = l;
+  $('l-lista').setAttribute('aria-pressed', String(l === 'lista'));
+  $('l-tabla').setAttribute('aria-pressed', String(l === 'tabla'));
+  $('hint').hidden = l !== 'tabla';
+}
+$('l-lista').addEventListener('click', () => setLayout('lista'));
+$('l-tabla').addEventListener('click', () => setLayout('tabla'));
+setLayout(matchMedia('(max-width: 760px)').matches ? 'lista' : 'tabla');
+$('v-cat').addEventListener('click', () => setView('cat'));
+$('v-est').addEventListener('click', () => setView('estado'));
+
+
+/* ---------- Búsqueda ---------- */
+const q = $('q'), results = $('results');
+let found = [];
+function renderResults() {
+  const v = norm(q.value.trim());
+  if (!v) { found = []; results.hidden = true; matchSet = null; applyDim(); return; }
+  found = E.filter((e) => norm(e.n).includes(v) || norm(e.s) === v || String(e.z) === v)
+    .sort((a, b) => (norm(b.n).startsWith(v) - norm(a.n).startsWith(v)) || a.z - b.z);
+  matchSet = new Set(found.map((e) => e.z));
+  applyDim();
+  results.hidden = false;
+  results.innerHTML = found.length
+    ? found.slice(0, 7).map((e) => `<li><button type="button" data-i="${e.z - 1}"><span class="mini-sym" style="--cat:var(--c-${e.c})">${e.s}</span><span class="rn">${e.n}</span><span class="rz">${e.z}</span></button></li>`).join('')
+    : `<li class="none">No hay un elemento que coincida con «${q.value.trim().replace(/[<>&]/g, '')}».</li>`;
+}
+q.addEventListener('input', renderResults);
+q.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Enter' && found.length) { ev.preventDefault(); openFicha(found[0].z - 1); }
+  if (ev.key === 'Escape') { q.value = ''; renderResults(); }
+});
+results.addEventListener('click', (ev) => {
+  const b = ev.target.closest('button[data-i]');
+  if (b) openFicha(+b.dataset.i);
+});
+document.addEventListener('click', (ev) => { if (!ev.target.closest('.search')) results.hidden = true; });
+q.addEventListener('focus', () => { if (found.length || q.value) results.hidden = false; });
+
+/* ---------- Ficha ---------- */
+const dlg = $('dlg'), ficha = $('ficha');
+let cur = 0;
+
+function cfgHtml(c) {
+  return c.split(' ').map((t) => {
+    if (t[0] === '[') return `<span style="opacity:.65">${t}</span>`;
+    const m = t.match(/^(\d)([spdf])(\d*)$/);
+    return m ? `${m[1]}${m[2]}<sup>${m[3] || 1}</sup>` : t;
+  }).join(' ');
+}
+function massTxt(e) { return e.mb ? `[${N(e.m, 0)}]` : N(e.m, 3); }
+function tempTxt(K, approx) {
+  if (K == null) return '—';
+  return `${approx ? '≈ ' : ''}${N(K - 273.15, 0).replace('-', '−')} °C <small>· ${N(K, 0)} K</small>`;
+}
+function abundTxt(a) {
+  if (a == null) return '—';
+  if (a >= 1) return `${N(a, a < 10 ? 2 : 0)} <small>mg/kg</small>`;
+  const [m, ex] = a.toExponential(1).split('e');
+  return `${m.replace('.0', '')}×10<sup>${String(+ex).replace('-', '−')}</sup> <small>mg/kg</small>`;
+}
+function bohr(e) {
+  const n = e.sh.length;
+  const r0 = n > 1 ? 34 : 70;
+  const step = n > 1 ? Math.min(26, (114 - r0) / (n - 1)) : 0;
+  let s = `<svg class="bohr" viewBox="-128 -128 256 256" role="img" aria-label="Diagrama de capas electrónicas de ${e.n}">`;
+  e.sh.forEach((c, i) => {
+    const r = r0 + i * step;
+    s += `<circle class="orb" r="${r.toFixed(1)}"/>`;
+    s += `<g class="ring${i % 2 ? ' rev' : ''}" style="--d:${46 + i * 14}s">`;
+    for (let k = 0; k < c; k++) {
+      const a = (2 * Math.PI * k) / c + i * 0.6;
+      s += `<circle class="el" cx="${(r * Math.cos(a)).toFixed(1)}" cy="${(r * Math.sin(a)).toFixed(1)}" r="3.3"/>`;
+    }
+    s += '</g>';
+  });
+  s += `<circle class="nuc" r="22"/><text class="nuc-t" y="6" text-anchor="middle">${e.s}</text></svg>`;
+  return s;
+}
+function locator(e) {
+  let cells = '';
+  const grid = {};
+  E.forEach((x) => { const [r, c] = pos(x); grid[`${r - 1},${c - 1}`] = x; });
+  for (let r = 1; r <= 10; r++) for (let c = 1; c <= 18; c++) {
+    const x = grid[`${r},${c}`];
+    cells += x ? `<i class="${x.z === e.z ? 'on' : ''}" style="--c:var(--c-${x.c});grid-row:${r};grid-column:${c}"></i>` : '';
+  }
+  return `<div class="mini" aria-hidden="true">${cells}</div>`;
+}
+
+function openFicha(i, keepOpen) {
+  cur = (i + E.length) % E.length;
+  const e = E[cur];
+  const st = stateAt(e, 298.15);
+  const approx = e.z >= 104;
+  const gas = st === 'g';
+  const dens = e.dens == null ? '—' : gas ? `${N(e.dens * 1000, 3)} <small>g/L (0 °C)</small>` : `${approx || [85, 87, 100, 101, 102, 103].includes(e.z) ? '≈ ' : ''}${N(e.dens, 2)} <small>g/cm³</small>`;
+  const mp = e.sub ? e.sub : e.z === 2 ? 'No solidifica a presión normal' : tempTxt(e.mp, e.z >= 99 || e.z === 85 || e.z === 87);
+  const bp = e.sub ? '—' : tempTxt(e.bp, e.z >= 85 && ![86, 88, 89, 90, 92].includes(e.z));
+  const grp = e.g ? e.g : '—';
+  const ox = e.ox && e.ox.length ? e.ox.map(sgn).join(', ') : '—';
+  const prev = E[(cur + E.length - 1) % E.length], next = E[(cur + 1) % E.length];
+  dlg.style.setProperty('--cat', `var(--c-${e.c})`);
+  ficha.innerHTML = `
+    <div class="side">
+      <div class="big">
+        <span class="bz">${e.z}</span><span class="bm">${massTxt(e)} u</span>
+        <span class="bs">${e.s}</span>
+      </div>
+      ${bohr(e)}
+      <div class="shells">Electrones por capa<br><b>${e.sh.join(' · ')}</b></div>
+    </div>
+    <div class="main">
+      <div>
+        <div class="chips">
+          <span class="tag cat">${CAT_NAME[e.c]}</span>
+          <span class="tag">Grupo ${grp}</span><span class="tag">Período ${e.p}</span><span class="tag">Bloque ${e.b}</span>
+          <span class="tag">${ST_NAME[st] === 'Sin datos' ? 'Estado desconocido' : ST_NAME[st] + ' a 25 °C'}</span>
+          ${e.radio ? '<span class="tag warn">Radiactivo</span>' : ''}
+        </div>
+        <h2 id="fn" style="margin-top:14px">${e.n}</h2>
+        <p class="lead">${e.d}</p>
+      </div>
+      <div class="two">
+        <div class="note"><h3>Para qué se usa</h3><p>${e.u}</p></div>
+        <div class="note"><h3>Dato curioso</h3><p>${e.k}</p></div>
+      </div>
+      <section>
+        <h3>Propiedades</h3>
+        <dl class="data">
+          <div><dt>Masa atómica</dt><dd>${massTxt(e)} <small>u</small></dd></div>
+          <div><dt>Punto de fusión</dt><dd>${mp}</dd></div>
+          <div><dt>Punto de ebullición</dt><dd>${bp}</dd></div>
+          <div><dt>Densidad</dt><dd>${dens}</dd></div>
+          <div><dt>Configuración electrónica</dt><dd>${cfgHtml(e.cfg)}</dd></div>
+          <div><dt>Estados de oxidación comunes</dt><dd>${ox}</dd></div>
+          <div><dt>Electronegatividad (Pauling)</dt><dd>${e.en == null ? '—' : N(e.en, 2)}</dd></div>
+          <div><dt>Primera energía de ionización</dt><dd>${e.ie == null ? '—' : N(e.ie, 2) + ' <small>eV</small>'}</dd></div>
+          <div><dt>Radio atómico</dt><dd>${e.rad == null ? '—' : N(e.rad, 0) + ' <small>pm</small>'}</dd></div>
+          <div><dt>Abundancia en la corteza</dt><dd>${abundTxt(e.ab)}</dd></div>
+        </dl>
+      </section>
+      <section class="hist">
+        <h3>Historia</h3>
+        <p><b>Descubrimiento:</b> ${e.q}</p>
+        <p><b>Origen del nombre:</b> ${e.o}</p>
+      </section>
+      <section class="locate"><div><h3 style="margin-bottom:6px">Lugar en la tabla</h3></div>${locator(e)}</section>
+      <div class="nav">
+        <button type="button" id="prev"><small>Anterior · ${prev.z}</small><span>${prev.n}</span></button>
+        <button type="button" id="close2" class="nclose">Cerrar</button>
+        <button type="button" id="next"><small>Siguiente · ${next.z}</small><span>${next.n}</span></button>
+      </div>
+    </div>`;
+  $('close2').addEventListener('click', () => dlg.close());
+  $('prev').addEventListener('click', () => { openFicha(cur - 1, true); });
+  $('next').addEventListener('click', () => { openFicha(cur + 1, true); });
+  ficha.querySelector('.main').scrollTop = 0;
+  dlg.scrollTop = 0;
+  if (!dlg.open) dlg.showModal();
+}
+$('close').addEventListener('click', () => dlg.close());
+dlg.addEventListener('click', (ev) => { if (ev.target === dlg) dlg.close(); });
+dlg.addEventListener('keydown', (ev) => {
+  if (ev.key === 'ArrowRight') { ev.preventDefault(); openFicha(cur + 1, true); }
+  if (ev.key === 'ArrowLeft') { ev.preventDefault(); openFicha(cur - 1, true); }
+});
+</script>
+
+</body>
+</html>
